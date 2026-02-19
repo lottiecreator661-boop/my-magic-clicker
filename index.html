@@ -1,265 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TON Empire: ELITE EDITION</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { --accent: #0098EA; --bg: #0b0f1a; --glass: rgba(255, 255, 255, 0.07); --success: #10b981; --error: #ef4444; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Level Bar */
+        .lvl-container { padding: 5px 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass); }
+        .lvl-bar-bg { height: 4px; background: #1e293b; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        #lvl-progress { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; }
+
+        .top-bar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(10px); }
+        .balance-val { font-size: 26px; font-weight: 900; text-shadow: 0 0 20px var(--accent); }
+
+        .tab-content { flex-grow: 1; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
+        .active-tab { display: flex; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mines Styles */
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; max-width: 320px; margin: 15px 0; }
+        .m-cell { aspect-ratio: 1; background: var(--glass); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+        .m-cell.open-gem { background: var(--accent); box-shadow: 0 0 15px var(--accent); border: none; }
+        .m-cell.open-bomb { background: var(--error); box-shadow: 0 0 15px var(--error); border: none; }
+
+        /* Common Elements */
+        .glass-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .btn { border: none; padding: 16px; border-radius: 16px; font-weight: 800; color: #fff; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn:active { transform: scale(0.97); }
+        .btn-blue { background: var(--accent); }
+        .btn-success { background: var(--success); }
+        .input-dark { background: #161b2a; border: 1px solid #2d3748; color: #fff; padding: 14px; border-radius: 12px; width: 100%; box-sizing: border-box; margin-bottom: 10px; text-align: center; }
+
+        .bottom-nav { background: rgba(11, 15, 26, 0.95); display: flex; justify-content: space-around; padding: 12px 0 30px 0; position: fixed; bottom: 0; width: 100%; border-top: 1px solid var(--glass); }
+        .nav-item { color: #64748b; text-align: center; font-size: 11px; }
+        .nav-item.active { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div class="lvl-container">
+        <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold;">
+            <span>RANK: <span id="rank-name">NOVICE</span></span>
+            <span>LVL <span id="lvl-val">1</span></span>
+        </div>
+        <div class="lvl-bar-bg"><div id="lvl-progress"></div></div>
+    </div>
+
+    <div class="top-bar">
+        <div>
+            <div id="balance" class="balance-val">0.00</div>
+            <div style="font-size: 10px; color: #94a3b8;">TON COINS</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="color: var(--success); font-weight: bold;">+<span id="pps">0.00</span> <small>PPS</small></div>
+            <div style="font-size: 12px;">⚡ <span id="energy">0</span></div>
+        </div>
+    </div>
+
+    <div id="tab-farm" class="tab-content active-tab">
+        <div id="coin" style="width:200px; height:200px; background:radial-gradient(#00f2ff, #0098EA); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:60px; margin: 30px 0; cursor:pointer; box-shadow: 0 0 40px rgba(0,152,234,0.3);">💎</div>
+        <div class="glass-card" style="text-align: center;">
+            <div id="energy-timer" style="font-size: 12px; color: #94a3b8;">Заряжено</div>
+            <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; margin-top: 8px;">
+                <div id="nrg-bar" style="height:100%; background: var(--accent); width: 0%; border-radius: 3px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-games" class="tab-content">
+        <div id="g-list" style="width: 100%;">
+            <div class="glass-card" onclick="uiG('mines')">💣 CRYSTAL MINES</div>
+            <div class="glass-card" onclick="uiG('wheel')">🎡 PvP WHEEL (JACKPOT)</div>
+        </div>
+
+        <div id="g-play" style="display:none; width: 100%;">
+            <h2 id="g-title" style="margin: 0 0 15px 0;">ИГРА</h2>
+            <div id="g-area"></div>
+            <div id="g-info" style="margin: 10px; color: #f59e0b; font-weight: bold;"></div>
+            <button id="btn-cashout" class="btn btn-success" style="display:none; margin-bottom: 10px;" onclick="doCashout()">ЗАБРАТЬ ВЫИГРЫШ</button>
+            <button class="btn" style="background: #334155;" onclick="closeG()">НАЗАД</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchT('farm', this)"><b>⛏</b><br>МАЙНИНГ</div>
+        <div class="nav-item" onclick="switchT('games', this)"><b>🎲</b><br>ИГРЫ</div>
+    </div>
+
 <script>
-    // Дожидаемся полной загрузки DOM, чтобы все элементы были доступны
-    document.addEventListener('DOMContentLoaded', function() {
-        // --- ЗАЩИТА ОТ ОТСУТСТВИЯ TELEGRAM ---
-        let tg;
-        try {
-            tg = window.Telegram?.WebApp; // опциональная цепочка – не упадёт, если Telegram undefined
-        } catch (e) {
-            tg = null;
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    let haptic = tg.HapticFeedback;
+
+    function n(v, f=0) { let res = parseFloat(v); return isNaN(res) || !isFinite(res) ? f : res; }
+
+    let saved = JSON.parse(localStorage.getItem('ton_final_elite')) || {};
+    let db = {
+        bal: n(saved.bal, 50),
+        totalEarned: n(saved.totalEarned, 0),
+        nrg: n(saved.nrg, 250),
+        pps: n(saved.pps, 0.01),
+        last: n(saved.last, Date.now()),
+        vip: saved.vip || false
+    };
+
+    let cur = { active: false, bet: 0, mult: 1, type: '', data: null, open: 0 };
+    let pot = 0;
+
+    function save() { localStorage.setItem('ton_final_elite', JSON.stringify(db)); }
+
+    function update() {
+        let now = Date.now();
+        let dt = Math.max(0, (now - db.last) / 1000);
+        
+        // Начисление PPS
+        let income = n(db.pps) * dt;
+        db.bal += income;
+        db.totalEarned += income;
+
+        // Энергия
+        let maxN = db.vip ? 10000 : 250;
+        let reg = db.vip ? 1.0 : 0.25;
+        if(db.nrg < maxN) db.nrg = Math.min(maxN, db.nrg + (dt * reg));
+
+        // Уровни (каждые 500 заработанных TON = +1 уровень)
+        let lvl = Math.floor(db.totalEarned / 500) + 1;
+        let progress = ((db.totalEarned % 500) / 500) * 100;
+        
+        // UI
+        document.getElementById('balance').innerText = db.bal.toFixed(2);
+        document.getElementById('pps').innerText = db.pps.toFixed(3);
+        document.getElementById('energy').innerText = Math.floor(db.nrg);
+        document.getElementById('nrg-bar').style.width = (db.nrg/maxN*100) + '%';
+        document.getElementById('lvl-val').innerText = lvl;
+        document.getElementById('lvl-progress').style.width = progress + '%';
+        document.getElementById('rank-name').innerText = lvl > 10 ? "ELITE" : "NOVICE";
+
+        db.last = now;
+        save();
+    }
+
+    // --- GAME ENGINE ---
+    function uiG(t) {
+        document.getElementById('g-list').style.display = 'none';
+        document.getElementById('g-play').style.display = 'block';
+        cur.type = t; cur.active = false;
+        let area = document.getElementById('g-area');
+        
+        if(t === 'mines') {
+            document.getElementById('g-title').innerText = "💣 CRYSTAL MINES";
+            area.innerHTML = `
+                <input type="number" id="mb" class="input-dark" placeholder="Ставка" value="10">
+                <input type="number" id="mc" class="input-dark" placeholder="Мины (1-24)" value="3">
+                <button class="btn btn-blue" onclick="startM()">ИГРАТЬ</button>
+                <div id="m-grid" class="mines-grid"></div>
+            `;
+        } else if (t === 'wheel') {
+            document.getElementById('g-title').innerText = "🎡 PvP WHEEL";
+            area.innerHTML = `
+                <div class="glass-card" style="text-align:center;">
+                    <div id="w-timer" style="font-size:20px; color:var(--accent); font-weight:900;">ЖДЕМ СТАВОК...</div>
+                    <div id="w-pot" style="margin:10px 0;">Банк: 0.00 TON</div>
+                    <input type="number" id="wb" class="input-dark" placeholder="Ваша ставка">
+                    <button class="btn btn-blue" onclick="startWheel()">ПОСТАВИТЬ</button>
+                </div>
+            `;
         }
-        // Если телеграма нет, просто работаем в обычном режиме (для отладки)
-        if (!tg) console.warn('Telegram WebApp не обнаружен, работаем локально');
+    }
 
-        // --- БЕЗОПАСНАЯ ЗАГРУЗКА ДАННЫХ ИЗ STORAGE ---
-        let saved = {};
-        try {
-            saved = JSON.parse(localStorage.getItem('ton_final_elite')) || {};
-        } catch (e) {
-            console.warn('Ошибка парсинга localStorage, начинаем с чистого листа');
-            saved = {};
-        }
+    function startM() {
+        let b = n(document.getElementById('mb').value);
+        let c = Math.min(24, Math.max(1, parseInt(document.getElementById('mc').value)));
+        if(b <= 0 || b > db.bal) return alert("Ошибка ставки!");
 
-        // --- ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ ---
-        let userId = tg?.initDataUnsafe?.user?.id || 0;
-        let pot = 0; // объявляем недостающую переменную
-
-        // Функция глубокой проверки на число
-        function n(val, fallback = 0) {
-            let num = parseFloat(val);
-            return isNaN(num) || !isFinite(num) ? fallback : num;
-        }
-
-        let today = new Date().toLocaleDateString();
-
-        let db = {
-            bal: n(saved.bal, 50),
-            nrg: n(saved.nrg, 250),
-            pps: n(saved.pps, 0),
-            clk: n(saved.clk, 0),
-            last: n(saved.last, Date.now()),
-            vip: saved.vip || false,
-            daily: n(saved.daily, 0),
-            q_date: saved.q_date || today,
-            q_list: saved.q_list || [false, false, false, false, false]
-        };
-
-        if (db.q_date !== today) {
-            db.q_list = [false, false, false, false, false];
-            db.q_date = today;
-        }
-
-        let cur = { active: false, bet: 0, mult: 1, type: '', data: null, step: 0 };
-        let wheelSec = 30;
-
-        // --- ФУНКЦИЯ СОХРАНЕНИЯ ---
-        function save() {
-            db.bal = n(db.bal, 0);
-            localStorage.setItem('ton_final_elite', JSON.stringify(db));
-        }
-
-        // --- ФУНКЦИЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА (теперь безопасная) ---
-        function update() {
-            let now = Date.now();
-            let dt = Math.max(0, (now - db.last) / 1000);
-
-            // Начисляем пассивку
-            db.bal = n(db.bal + (n(db.pps) * dt));
-
-            let maxN = db.vip ? 10000 : 250;
-            let reg = db.vip ? 1.0 : 0.25;
-
-            // Обновляем энергию и таймер
-            if (db.nrg < maxN) {
-                db.nrg = Math.min(maxN, db.nrg + (dt * reg));
-                let remain = (maxN - db.nrg) / reg;
-                let m = Math.floor(remain / 60);
-                let s = Math.floor(remain % 60);
-                setElementText('energy-timer', `Фулл энергия через: ${m}:${s < 10 ? '0' + s : s}`);
-            } else {
-                setElementText('energy-timer', 'Заряжено на 100%');
-            }
-
-            db.last = now;
-
-            // Безопасно обновляем элементы интерфейса, если они существуют
-            setElementText('balance', n(db.bal).toFixed(2));
-            setElementText('pps', n(db.pps).toFixed(2));
-            setElementText('energy', Math.floor(n(db.nrg)));
-
-            let nrgBar = document.getElementById('nrg-bar');
-            if (nrgBar) nrgBar.style.width = (n(db.nrg) / maxN * 100) + '%';
-
-            renderQuests(); // предполагается, что эта функция тоже безопасна
-            save();
-        }
-
-        // Вспомогательная функция для безопасной установки текста
-        function setElementText(id, text) {
-            let el = document.getElementById(id);
-            if (el) el.innerText = text;
-        }
-
-        // --- ИГРЫ (исправлены) ---
-
-        function startM() {
-            let input = document.getElementById('mb');
-            if (!input) return alert('Поле ставки не найдено');
-            let b = n(input.value, 0);
-            let cInput = document.getElementById('mc');
-            let c = cInput ? n(cInput.value, 0) : 0;
-
-            if (b <= 0) return alert("Введите корректную ставку!");
-            if (b > db.bal) return alert("Недостаточно баланса!");
-            if (b > 10000000) return alert("Макс. ставка 10,000,000!");
-            if (c <= 0) return alert("Укажите количество мин (от 1 до 24)");
-
-            db.bal -= b;
-            cur = { active: true, bet: b, mult: 1, type: 'mines', data: Array(25).fill(false) };
-            let p = 0;
-            while (p < c) {
-                let r = Math.floor(Math.random() * 25);
-                if (!cur.data[r]) {
-                    cur.data[r] = true;
-                    p++;
+        db.bal -= b; haptic.impactOccurred('medium');
+        cur = { active: true, bet: b, mult: 1, type: 'mines', data: Array(25).fill(false), open: 0 };
+        let p=0; while(p<c){let r=Math.floor(Math.random()*25); if(!cur.data[r]){cur.data[r]=true; p++;}}
+        
+        let grid = document.getElementById('m-grid'); grid.innerHTML = '';
+        for(let i=0; i<25; i++) {
+            let d = document.createElement('div'); d.className = 'm-cell'; d.innerText = '?';
+            d.onclick = () => {
+                if(!cur.active || d.classList.contains('opened')) return;
+                d.classList.add('opened');
+                if(cur.data[i]) {
+                    d.innerText = '💣'; d.classList.add('open-bomb'); cur.active = false;
+                    haptic.notificationOccurred('error');
+                    document.getElementById('btn-cashout').style.display = 'none';
+                } else {
+                    d.innerText = '💎'; d.classList.add('open-gem');
+                    cur.open++; cur.mult *= (1 + (c/(25-cur.open)));
+                    haptic.impactOccurred('light');
+                    document.getElementById('g-info').innerText = `x${cur.mult.toFixed(2)} | ${(cur.bet*cur.mult).toFixed(2)} TON`;
+                    document.getElementById('btn-cashout').style.display = 'block';
                 }
-            }
-
-            let grid = document.getElementById('m-grid');
-            if (!grid) return alert('Игровое поле не найдено');
-            grid.innerHTML = '';
-            for (let i = 0; i < 25; i++) {
-                let d = document.createElement('div');
-                d.className = 'm-cell';
-                d.innerText = '?';
-                d.onclick = () => {
-                    if (!cur.active || d.innerText !== '?') return;
-                    if (cur.data[i]) {
-                        d.innerText = '💣';
-                        d.classList.add('open-bomb');
-                        cur.active = false;
-                        setElementText('btn-cashout', 'none'); // скрываем кнопку
-                        document.getElementById('btn-cashout').style.display = 'none';
-                        setElementText('g-info', "ВЗРЫВ! Потеряно: " + cur.bet.toFixed(2));
-                    } else {
-                        d.innerText = '💎';
-                        d.classList.add('open-gem');
-                        cur.mult += (c / 4) + 0.3;
-                        setElementText('g-info', `Куш: ${(cur.bet * cur.mult).toFixed(2)} TON`);
-                        let btn = document.getElementById('btn-cashout');
-                        if (btn) btn.style.display = 'block';
-                    }
-                };
-                grid.appendChild(d);
-            }
-            update();
+            }; grid.appendChild(d);
         }
+    }
 
-        function startL() {
-            let input = document.getElementById('lb');
-            if (!input) return alert('Поле ставки не найдено');
-            let b = n(input.value, 0);
-
-            if (b <= 0) return alert("Введите ставку!");
-            if (b > db.bal) return alert("Мало TON!");
-            if (b > 10000000) return alert("Макс. ставка 10,000,000!");
-
-            db.bal -= b;
-            cur = { active: true, bet: b, mult: 1, type: 'ladder', step: 0 };
-            let grid = document.getElementById('l-grid');
-            if (!grid) return alert('Игровое поле не найдено');
-            grid.innerHTML = '';
-            for (let i = 0; i < 6; i++) {
-                let r = document.createElement('div');
-                r.className = 'ladder-row' + (i > 0 ? ' locked' : '');
-                let t = Math.floor(Math.random() * 2);
-                r.innerHTML = `<div class="l-cell" onclick="stepL(0,${t},${i},this)">?</div><div class="l-cell" onclick="stepL(1,${t},${i},this)">?</div>`;
-                grid.appendChild(r);
-            }
-            update();
-        }
-
-        window.stepL = function(ch, tr, idx, el) {
-            if (!cur.active || idx !== cur.step) return;
-            if (ch === tr) {
-                el.innerText = '💥';
-                el.style.background = '#ef4444';
-                cur.active = false;
-                setElementText('btn-cashout', 'none');
-                document.getElementById('btn-cashout').style.display = 'none';
-                setElementText('g-info', "УПАЛ!");
-            } else {
-                el.innerText = '💎';
-                el.style.background = '#10b981';
-                cur.mult *= 2.1;
-                cur.step++;
-                setElementText('g-info', `Выплата: ${(cur.bet * cur.mult).toFixed(2)}`);
-                let btn = document.getElementById('btn-cashout');
-                if (btn) btn.style.display = 'block';
-                if (cur.step < 6) {
-                    let rows = document.querySelectorAll('.ladder-row');
-                    if (rows[cur.step]) rows[cur.step].classList.remove('locked');
+    function startWheel() {
+        let b = n(document.getElementById('wb').value);
+        if(b < 1 || b > db.bal) return alert("Мало TON!");
+        db.bal -= b; pot = b;
+        document.getElementById('w-pot').innerText = `Банк: ${pot.toFixed(2)} TON`;
+        haptic.notificationOccurred('success');
+        
+        let s = 5;
+        let t = setInterval(() => {
+            document.getElementById('w-timer').innerText = `СТАРТ ЧЕРЕЗ ${s}c`;
+            s--;
+            if(s < 0) {
+                clearInterval(t);
+                let win = Math.random() > 0.5; // 50/50 симуляция
+                if(win) {
+                    let prize = pot * 1.8;
+                    db.bal += prize; db.totalEarned += prize;
+                    alert("🎉 ПОБЕДА! + " + prize.toFixed(2));
+                } else {
+                    alert("❌ ПРОИГРЫШ!");
                 }
+                uiG('wheel');
             }
-        };
+        }, 1000);
+    }
 
-        function betWheel() {
-            let input = document.getElementById('wb');
-            if (!input) return alert('Поле ставки не найдено');
-            let b = n(input.value, 0);
-            if (b < 1 || b > 1000000) return alert("Ставка от 1 до 1,000,000!");
-            if (b > db.bal) return alert("Недостаточно TON!");
+    function doCashout() {
+        if(!cur.active) return;
+        let win = cur.bet * cur.mult;
+        db.bal += win; db.totalEarned += win;
+        cur.active = false;
+        haptic.notificationOccurred('success');
+        alert("Забрал: " + win.toFixed(2) + " TON");
+        closeG();
+    }
 
-            db.bal -= b;
-            pot = n(pot + b);
-            setElementText('w-pot', `Общий банк: ${pot.toFixed(2)} TON`);
-            setElementText('w-players', "Вы в игре! Ожидание результата...");
+    // --- SYSTEM ---
+    document.getElementById('coin').onclick = (e) => {
+        if(db.nrg >= 1) {
+            db.nrg--; db.bal += 0.01; db.totalEarned += 0.01;
+            haptic.impactOccurred('light');
             update();
         }
+    };
 
-        function doCashout() {
-            if (!cur.active) return;
-            let win = n(cur.bet * cur.mult);
-            db.bal = n(db.bal + win);
-            cur.active = false;
-            alert("Победа! Зачислено: " + win.toFixed(2) + " TON");
-            closeG(); // предполагается, что эта функция существует
-            update();
-        }
+    function switchT(t, el) {
+        document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active-tab'));
+        document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.add('active-tab');
+        el.classList.add('active');
+    }
 
-        // --- ОСТАЛЬНЫЕ ФУНКЦИИ ---
-        function buyM(id, cost, p) {
-            if (db.bal >= cost) {
-                db.bal -= cost;
-                db.pps = n(db.pps + p);
-                update();
-                alert("Успешно куплено!");
-            } else {
-                alert("Не хватает TON!");
-            }
-        }
+    function closeG() { 
+        document.getElementById('g-list').style.display = 'block'; 
+        document.getElementById('g-play').style.display = 'none'; 
+    }
 
-        function claimDaily() {
-            if (Date.now() - db.daily > 86400000) {
-                db.bal += 15;
-                db.daily = Date.now();
-                alert("Бонус 15 TON получен!");
-            } else {
-                alert("Бонус будет доступен через 24 часа!");
-            }
-            update();
-        }
-
-        // Если функция renderQuests не определена, создадим заглушку
-        if (typeof renderQuests !== 'function') {
-            window.renderQuests = function() {
-                // здесь должна быть отрисовка квестов
-                console.log('renderQuests вызвана (заглушка)');
-            };
-        }
-
-        // Запускаем первое обновление и устанавливаем интервал
-        update();
-        setInterval(update, 1000);
-    });
+    setInterval(update, 1000);
+    update();
 </script>
+</body>
+</html>
