@@ -3,26 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON Empire Stable PvP</title>
+    <title>TON Empire PvP Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Оставляем те же стили, что были раньше */
         :root { --accent: #0098EA; --bg: #0b0f1a; --glass: rgba(255, 255, 255, 0.07); }
         body { background: var(--bg); color: #fff; text-align: center; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+
+        /* Шапка с Онлайном */
         .top-bar { background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(20px); padding: 15px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--glass); }
         .online-tag { font-size: 10px; background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 5px; }
         .balance-val { font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent); }
+
         .tab-content { flex-grow: 1; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
         .active-tab { display: flex; }
+
+        /* Рулетка Анимация */
         .wheel-container { position: relative; width: 100%; height: 80px; background: #161b2a; border-radius: 15px; overflow: hidden; margin: 20px 0; border: 2px solid var(--glass); }
         .wheel-line { display: flex; position: absolute; left: 0; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); will-change: transform; }
         .wheel-item { min-width: 60px; height: 60px; margin: 10px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
         .wheel-pointer { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #ff4757; transform: translateX(-50%); z-index: 10; box-shadow: 0 0 10px #ff4757; }
+
+        /* Остальное */
         #coin { width: 190px; height: 190px; background: linear-gradient(135deg, #0098EA, #00f2ff); border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 60px; cursor: pointer; box-shadow: 0 0 40px rgba(0, 152, 234, 0.4); position: relative; }
+        .tap-anim { position: absolute; color: #fff; font-weight: bold; font-size: 26px; pointer-events: none; animation: fly 0.6s forwards; }
+        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
+        
         .glass-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
         .btn { border: none; padding: 15px; border-radius: 15px; font-weight: 800; color: #fff; cursor: pointer; width: 100%; }
         .btn-blue { background: var(--accent); }
         .input-dark { background: #161b2a; border: 1px solid #2d3748; color: #fff; padding: 12px; border-radius: 12px; width: 90%; margin-bottom: 10px; text-align: center; }
+        
+        /* Навигация */
         .bottom-nav { background: rgba(11, 15, 26, 0.95); display: flex; justify-content: space-around; padding: 12px 0 35px 0; position: fixed; bottom: 0; width: 100%; border-top: 1px solid var(--glass); }
         .nav-item { color: #64748b; font-size: 11px; cursor: pointer; }
         .nav-item.active { color: var(--accent); }
@@ -31,7 +42,7 @@
 <body>
     <div class="top-bar">
         <div style="text-align: left;">
-            <div class="online-tag">● ONLINE: <span id="online-cnt">...</span></div>
+            <div class="online-tag">● ONLINE: <span id="online-cnt">542</span></div>
             <div class="balance-val"><span id="balance">0.00</span> <small style="font-size:10px">TON</small></div>
         </div>
         <div style="text-align: right;"><small style="color:#94a3b8">PPS</small><div style="color:#34d399; font-weight:bold;">+<span id="pps">0</span></div></div>
@@ -40,14 +51,16 @@
     <div id="tab-farm" class="tab-content active-tab">
         <div id="coin">💎</div>
         <div style="font-size: 28px; font-weight: 900;">⚡ <span id="energy">250</span></div>
+        <div id="energy-timer" style="font-size:12px; color:#94a3b8; margin-top:5px;">Заряжено</div>
     </div>
 
     <div id="tab-games" class="tab-content">
         <div id="g-list" style="width:100%">
-            <div class="glass-card" onclick="uiG('mines')">💣 МИНЫ</div>
-            <div class="glass-card" onclick="uiG('ladder')">🪜 ЛЕСЕНКА</div>
+            <div class="glass-card" onclick="uiG('mines')">💣 МИНЫ (До 10M TON)</div>
+            <div class="glass-card" onclick="uiG('ladder')">🪜 ЛЕСЕНКА (До 10M TON)</div>
             <div class="glass-card" onclick="uiG('wheel')" style="border-color:#f59e0b">🎡 PvP ДЖЕКПОТ</div>
         </div>
+
         <div id="g-play" style="display:none; width:100%">
             <h2 id="g-title">ИГРА</h2>
             <div id="g-area"></div>
@@ -63,57 +76,52 @@
     </div>
 
     <script>
+        // --- БАЗА И ЗАЩИТА ОТ NaN ---
         function n(v, f=0) { let res = parseFloat(v); return isNaN(res) ? f : res; }
 
-        // Добавили jackpot_bet и jackpot_pot в основную базу
-        let db = JSON.parse(localStorage.getItem('ton_empire_secure')) || { 
-            bal: 100, nrg: 250, pps: 0, last: Date.now(), 
-            jackpot_bet: 0, jackpot_pot: 0 
-        };
+        let db = JSON.parse(localStorage.getItem('ton_pvp_v1')) || { bal: 100, nrg: 250, pps: 0, clk: 0, last: Date.now(), vip: false };
+        let cur = { active: false, bet: 0, mult: 1, type: '' };
+        let wheelPot = 0;
+        let wheelActive = false;
+        let wheelPlayers = [];
 
-        let wheelRunning = false;
-        let timerId = null;
-
-        function save() { localStorage.setItem('ton_empire_secure', JSON.stringify(db)); }
+        function save() { localStorage.setItem('ton_pvp_v1', JSON.stringify(db)); }
 
         function update() {
             let now = Date.now();
             let dt = (now - db.last) / 1000;
             db.bal = n(db.bal + (n(db.pps) * dt));
-            db.nrg = Math.min(250, db.nrg + (dt * 0.2));
+            let maxN = db.vip ? 10000 : 250;
+            db.nrg = Math.min(maxN, db.nrg + (dt * 0.2));
             db.last = now;
 
             document.getElementById('balance').innerText = n(db.bal).toFixed(2);
             document.getElementById('pps').innerText = n(db.pps).toFixed(2);
             document.getElementById('energy').innerText = Math.floor(n(db.nrg));
-            document.getElementById('online-cnt').innerText = Math.floor(Math.random() * 50) + 800;
+            document.getElementById('online-cnt').innerText = Math.floor(Math.random() * 50) + 600;
             save();
         }
 
+        // --- ДЖЕКПОТ PvP ---
         function uiG(t) {
             document.getElementById('g-list').style.display = 'none';
             document.getElementById('g-play').style.display = 'block';
+            cur.type = t;
             let area = document.getElementById('g-area');
             
             if(t === 'wheel') {
-                document.getElementById('g-title').innerText = "PvP ДЖЕКПОТ";
+                document.getElementById('g-title').innerText = "PvP JACKPOT";
                 area.innerHTML = `
                     <div class="wheel-container">
                         <div class="wheel-pointer"></div>
                         <div id="w-line" class="wheel-line"></div>
                     </div>
                     <div id="w-status" style="font-size:14px; color:#34d399">Ждем ставок...</div>
-                    <div id="w-pot-val" style="font-size:24px; margin:10px 0;">Банк: 0.00 TON</div>
-                    <div id="w-inputs">
-                        <input type="number" id="wb" class="input-dark" placeholder="Ваша ставка">
-                        <button class="btn btn-blue" onclick="betWheel()">ПОСТАВИТЬ</button>
-                    </div>
+                    <div id="w-pot-val" style="font-size:24px; margin:10px 0;">Банк: 0 TON</div>
+                    <input type="number" id="wb" class="input-dark" placeholder="Ваша ставка">
+                    <button class="btn btn-blue" onclick="betWheel()">ПОСТАВИТЬ</button>
                 `;
                 renderWheelItems();
-                // Если при заходе уже есть ставка — восстанавливаем вид
-                if(db.jackpot_bet > 0) {
-                    restoreJackpot();
-                }
             } else if(t === 'mines') {
                 area.innerHTML = `<input type="number" id="mb" class="input-dark" placeholder="Ставка"><button class="btn btn-blue" onclick="startM()">ИГРАТЬ</button><div id="m-grid" class="mines-grid"></div>`;
             }
@@ -121,10 +129,9 @@
 
         function renderWheelItems() {
             const line = document.getElementById('w-line');
-            if(!line) return;
             line.innerHTML = '';
             const icons = ['💎', '💰', '🔥', '👑', '⭐', '🍀'];
-            for(let i=0; i<45; i++) {
+            for(let i=0; i<40; i++) {
                 let div = document.createElement('div');
                 div.className = 'wheel-item';
                 div.innerText = icons[i % icons.length];
@@ -134,78 +141,65 @@
 
         function betWheel() {
             let b = n(document.getElementById('wb').value);
-            if(b < 1 || b > db.bal) return alert("Некорректная ставка!");
+            if(b < 1 || b > db.bal) return alert("Ошибка ставки!");
             
-            db.bal -= b;
-            db.jackpot_bet = b;
-            db.jackpot_pot = b;
-            save();
+            db.bal -= b; wheelPot += b;
+            document.getElementById('w-pot-val').innerText = `Банк: ${wheelPot.toFixed(2)} TON`;
+            document.getElementById('w-status').innerText = "Ставка принята! Ждем оппонента...";
             
-            restoreJackpot();
-            
-            // Симуляция входа соперника
+            // Симуляция входа другого игрока через 3 сек
             setTimeout(() => {
-                db.jackpot_pot += b * 1.5;
-                save();
-                if(document.getElementById('w-pot-val')) {
-                    document.getElementById('w-pot-val').innerText = `Банк: ${db.jackpot_pot.toFixed(2)} TON`;
-                    startCountDown();
-                }
-            }, 4000);
-        }
-
-        function restoreJackpot() {
-            let potEl = document.getElementById('w-pot-val');
-            let statusEl = document.getElementById('w-status');
-            let inputEl = document.getElementById('w-inputs');
-            if(potEl) potEl.innerText = `Банк: ${db.jackpot_pot.toFixed(2)} TON`;
-            if(statusEl) statusEl.innerText = "Ставка принята! Ждем оппонента...";
-            if(inputEl) inputEl.style.display = 'none'; // Прячем ввод во время игры
+                if(cur.type !== 'wheel') return;
+                wheelPot += b * 1.2; // «Соперник» поставил столько же + чуть сверху
+                document.getElementById('w-pot-val').innerText = `Банк: ${wheelPot.toFixed(2)} TON`;
+                startCountDown();
+            }, 3000);
+            update();
         }
 
         function startCountDown() {
             let s = 10;
-            if(timerId) clearInterval(timerId);
-            timerId = setInterval(() => {
-                let statusEl = document.getElementById('w-status');
-                if(!statusEl) { clearInterval(timerId); return; }
-                statusEl.innerText = `Игра начнется через ${s}с`;
+            let timer = setInterval(() => {
+                if(cur.type !== 'wheel') { clearInterval(timer); return; }
+                document.getElementById('w-status').innerText = `Игра начнется через ${s}с`;
                 s--;
                 if(s < 0) {
-                    clearInterval(timerId);
+                    clearInterval(timer);
                     runWheel();
                 }
             }, 1000);
         }
 
         function runWheel() {
-            if(wheelRunning) return;
-            wheelRunning = true;
             const line = document.getElementById('w-line');
-            if(!line) return;
-            
-            const shift = Math.floor(Math.random() * 1000) + 1500;
+            const shift = Math.floor(Math.random() * 1500) + 1000;
             line.style.transform = `translateX(-${shift}px)`;
             
             setTimeout(() => {
-                alert("🎉 ВЫИГРЫШ: " + db.jackpot_pot.toFixed(2) + " TON!");
-                db.bal += db.jackpot_pot;
-                db.jackpot_bet = 0;
-                db.jackpot_pot = 0;
-                wheelRunning = false;
-                save();
-                
-                // Сброс визуала
-                closeG(); 
+                alert("🎉 ВЫ ВЫИГРАЛИ! Приз: " + wheelPot.toFixed(2) + " TON");
+                db.bal += wheelPot;
+                wheelPot = 0;
+                line.style.transition = 'none';
+                line.style.transform = 'translateX(0)';
+                setTimeout(() => line.style.transition = 'transform 4s cubic-bezier(0.15, 0, 0.15, 1)', 50);
+                document.getElementById('w-pot-val').innerText = `Банк: 0 TON`;
+                document.getElementById('w-status').innerText = "Ждем ставок...";
                 update();
             }, 4500);
         }
 
-        function closeG() { 
-            document.getElementById('g-list').style.display = 'block'; 
-            document.getElementById('g-play').style.display = 'none'; 
-            if(timerId) clearInterval(timerId);
-        }
+        // КЛИКЕР
+        document.getElementById('coin').onclick = (e) => {
+            if(db.nrg >= 1) {
+                db.nrg--; db.bal += 0.5;
+                let a = document.createElement('div');
+                a.className = 'tap-anim'; a.innerText = '+0.5';
+                a.style.left = e.clientX + 'px'; a.style.top = e.clientY + 'px';
+                document.body.appendChild(a);
+                setTimeout(() => a.remove(), 600);
+                update();
+            }
+        };
 
         function switchT(id, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
@@ -214,9 +208,7 @@
             el.classList.add('active');
         }
 
-        document.getElementById('coin').onclick = () => {
-            if(db.nrg >= 1) { db.nrg--; db.bal += 0.5; update(); }
-        };
+        function closeG() { document.getElementById('g-list').style.display = 'block'; document.getElementById('g-play').style.display = 'none'; }
 
         setInterval(update, 1000);
         update();
