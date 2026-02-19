@@ -3,47 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON EMPIRE: GOD MODE</title>
+    <title>TON EMPIRE: TRUE GOD MODE</title>
     <style>
-        :root { --blue: #00d2ff; --neon: #00f2ff; --glass: rgba(255, 255, 255, 0.07); --gold: #ffd700; }
-        body { background: #020408; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; transition: 0.3s; }
+        :root { --blue: #00d2ff; --neon: #00f2ff; --glass: rgba(255, 255, 255, 0.07); --gold: #ffd700; --red: #ff4444; }
+        body { background: #020408; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
         
         .overdrive-active { background: radial-gradient(circle, #1a0033 0%, #020408 100%) !important; box-shadow: inset 0 0 100px #ff00ff !important; }
-        .overdrive-active #coin { transform: scale(1.1); box-shadow: 0 0 60px #ff00ff !important; filter: hue-rotate(280deg); }
-
-        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--blue); backdrop-filter: blur(10px); z-index: 10; }
+        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--blue); }
         .balance { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--blue); }
 
-        .tab-content { display: none; padding: 20px; height: 78vh; overflow-y: auto; flex-direction: column; align-items: center; padding-bottom: 120px; }
+        .tab-content { display: none; padding: 20px; height: 75vh; overflow-y: auto; flex-direction: column; align-items: center; padding-bottom: 120px; }
         .active { display: flex; }
 
-        #coin { width: 180px; height: 180px; background: linear-gradient(135deg, var(--blue), #3a7bd5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 0 30px var(--blue); border: 4px solid #fff; cursor: pointer; position: relative; transition: 0.1s; z-index: 5; }
-        .ov-container { width: 80%; height: 6px; background: #111; border-radius: 10px; margin-top: 20px; overflow: hidden; border: 1px solid #333; }
-        #ov-fill { width: 0%; height: 100%; background: #ff00ff; box-shadow: 0 0 10px #ff00ff; transition: 0.1s; }
+        #coin { width: 170px; height: 170px; background: linear-gradient(135deg, var(--blue), #3a7bd5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 0 30px var(--blue); border: 4px solid #fff; cursor: pointer; transition: 0.1s; z-index: 5; margin-top: 20px;}
+        .ov-container { width: 80%; height: 6px; background: #111; border-radius: 10px; margin-top: 15px; overflow: hidden; }
+        #ov-fill { width: 0%; height: 100%; background: #ff00ff; transition: 0.1s; }
 
-        .card { background: var(--glass); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 18px; padding: 15px; margin: 10px 0; width: 100%; box-sizing: border-box; backdrop-filter: blur(5px); position: relative; overflow: hidden; }
-        .btn-gold { background: linear-gradient(90deg, #ffd700, #ff8c00); border: none; color: #000; padding: 12px; border-radius: 12px; font-weight: 900; width: 100%; cursor: pointer; }
-        .btn-blue { background: linear-gradient(90deg, var(--blue), #3a7bd5); border: none; color: #fff; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
+        .card { background: var(--glass); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 18px; padding: 15px; margin: 10px 0; width: 100%; box-sizing: border-box; backdrop-filter: blur(5px); }
+        .btn-blue { background: linear-gradient(90deg, var(--blue), #3a7bd5); border: none; color: #fff; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; }
+        .btn-gold { background: linear-gradient(90deg, var(--gold), #ff8c00); border: none; color: #000; padding: 12px; border-radius: 12px; font-weight: 900; width: 100%; cursor: pointer; }
 
-        .tap-val { position: absolute; font-weight: 900; font-size: 32px; color: var(--blue); pointer-events: none; animation: float 0.7s ease-out forwards; z-index: 20; }
-        @keyframes float { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-150px) scale(1.5); } }
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; width: 100%; }
+        .m-cell { background: rgba(255,255,255,0.05); height: 50px; border-radius: 10px; border: 1px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        
+        .ladder-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; width: 100%; opacity: 0.4; }
+        .ladder-row.active-row { opacity: 1; }
 
-        /* Игры */
-        .ladder-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; width: 100%; }
-        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; }
-        .m-cell { background: rgba(255,255,255,0.05); width: 100%; height: 50px; border-radius: 10px; border: 1px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 22px; }
-
-        /* Лутбокс анимация */
-        #case-scroll { height: 60px; display: none; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; border: 2px solid var(--gold); border-radius: 12px; margin: 10px 0; background: #000; overflow: hidden; }
-        .roll { animation: rollAnim 0.2s infinite; }
-        @keyframes rollAnim { 0% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0.5; } }
-
-        .menu { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(5, 10, 20, 0.95); padding: 15px 0 30px; border-top: 1px solid var(--blue); z-index: 100; }
+        .menu { position: fixed; bottom: 0; width: 100%; display: flex; background: #050a14; padding: 15px 0 35px; border-top: 1px solid var(--blue); }
         .menu-item { flex: 1; text-align: center; color: #555; font-size: 10px; font-weight: bold; }
         .menu-item.active-nav { color: var(--blue); }
         .menu-item b { font-size: 22px; display: block; }
-        
-        input { background: #000; border: 1px solid var(--blue); color: #fff; padding: 10px; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
+
+        input { background: #000; border: 1px solid var(--blue); color: #fff; padding: 10px; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+        #admin-panel { display: none; } /* Скрыто для всех по умолчанию */
     </style>
 </head>
 <body>
@@ -51,7 +43,7 @@
 <div class="header">
     <div>
         <div class="balance"><span id="bal">0</span> TON</div>
-        <div style="color: #00ff88; font-size: 12px;">+<span id="pps">0.00</span>/s</div>
+        <div style="color: #00ff88; font-size: 12px;">Доход: +<span id="pps">0</span>/s</div>
     </div>
     <div id="vip-status"></div>
 </div>
@@ -59,92 +51,78 @@
 <div id="farm" class="tab-content active">
     <div id="coin">💎</div>
     <div class="ov-container"><div id="ov-fill"></div></div>
-    <div style="font-size: 10px; color: #ff00ff; margin-top: 5px; font-weight: bold;">OVERDRIVE</div>
-
-    <div class="card" style="margin-top: 20px; text-align: center;">
-        <div style="display:flex; justify-content:space-between; font-size: 13px;">
-            <span>⚡ ENERGY</span><span id="nrg-txt">0/0</span>
-        </div>
-        <div style="width:100%; height:8px; background:#111; border-radius:10px; margin-top:5px; border: 1px solid #333;">
-            <div id="nrg-fill" style="height:100%; background:var(--blue); border-radius:10px;"></div>
-        </div>
+    <div class="card" style="margin-top: 20px;">
+        <div style="display:flex; justify-content:space-between; font-size: 12px;"><span>⚡ ЭНЕРГИЯ</span><span id="nrg-txt">0/0</span></div>
+        <div style="width:100%; height:8px; background:#111; border-radius:10px; margin-top:5px;"><div id="nrg-fill" style="height:100%; background:var(--blue); border-radius:10px;"></div></div>
     </div>
 </div>
 
 <div id="shop" class="tab-content">
-    <div class="card" style="border: 1px solid var(--gold); text-align: center;">
-        <h3 style="color: var(--gold); margin: 0;">📦 ЛУТБОКС</h3>
-        <div id="case-scroll">💎</div>
-        <button id="case-btn" class="btn-gold" onclick="openCase()">ОТКРЫТЬ (500 TON)</button>
-    </div>
-    <h3 style="color: var(--blue);">🛒 МАЙНИНГ ФЕРМЫ</h3>
-    <div class="card">
-        <b>GPU RTX 3060</b> (+0.1/s) - 500 TON
-        <button class="btn-blue" onclick="buyFarm(0)">КУПИТЬ</button>
+    <div class="card" style="border: 1px solid var(--gold); text-align:center;">
+        <h3 style="color: var(--gold);">📦 КЕЙС</h3>
+        <button class="btn-gold" onclick="openCase()">ОТКРЫТЬ (500 TON)</button>
     </div>
     <div class="card">
-        <b>Server Rack</b> (+2.0/s) - 2000 TON
-        <button class="btn-blue" onclick="buyFarm(1)">КУПИТЬ</button>
+        <h3>GPU RTX 3060</h3>
+        <p>+0.5/сек | Цена: 1000 TON</p>
+        <button class="btn-blue" onclick="buyFarm(1000, 0.5)">КУПИТЬ</button>
     </div>
-    <div class="card" style="border-color: gold;">
-        <b style="color: gold;">GOD MINE</b> (+100/s) - 10M TON
-        <button class="btn-gold" onclick="buyFarm(2)">КУПИТЬ</button>
+    <div class="card">
+        <h3>SERVER RACK</h3>
+        <p>+5.0/сек | Цена: 5000 TON</p>
+        <button class="btn-blue" onclick="buyFarm(5000, 5.0)">КУПИТЬ</button>
     </div>
 </div>
 
 <div id="games" class="tab-content">
-    <div id="g-list" style="width: 100%;">
-        <div class="card" onclick="openGame('mines')">💣 МИНЫ (DIAMOND)</div>
+    <div id="g-list" style="width:100%">
+        <div class="card" onclick="openGame('mines')">💣 МИНЫ</div>
         <div class="card" onclick="openGame('ladder')">🪜 ЛЕСЕНКА</div>
-        <div class="card" onclick="openGame('bj')">🃏 БЛЭКДЖЕК PRO</div>
+        <div class="card" onclick="openGame('bj')">🃏 БЛЭКДЖЕК</div>
     </div>
-    <div id="g-play" style="display:none; width: 100%;">
-        <h2 id="g-title" style="color: var(--blue);">GAME</h2>
+    <div id="g-play" style="display:none; width:100%">
+        <h2 id="g-title" style="color:var(--blue)">ИГРА</h2>
         <div id="g-area"></div>
-        <div id="g-status" style="color: var(--gold); font-weight: 900; margin: 10px; text-align: center;"></div>
-        <button id="cash-btn" class="btn-gold" style="display:none; margin-bottom: 10px;" onclick="cashout()">ЗАБРАТЬ</button>
-        <button id="back-btn" class="btn-blue" style="background: #333;" onclick="closeGame()">НАЗАД</button>
+        <div id="g-status" style="color:var(--gold); font-weight:bold; margin:10px; text-align:center;"></div>
+        <button id="cash-btn" class="btn-gold" style="display:none" onclick="cashout()">ЗАБРАТЬ</button>
+        <button id="back-btn" class="btn-blue" style="background:#333" onclick="closeGame()">НАЗАД</button>
     </div>
 </div>
 
 <div id="profile" class="tab-content">
     <div class="card">
         <h3>СТАТИСТИКА</h3>
-        <p>Игр: <span id="st-total">0</span> | Побед: <span id="st-wins">0</span></p>
-        <input type="text" id="promo-input" placeholder="Введите промокод">
+        <p>Игр: <span id="st-t">0</span> | Побед: <span id="st-w">0</span></p>
+        <input type="text" id="promo-in" placeholder="Промокод">
         <button class="btn-blue" onclick="usePromo()">АКТИВИРОВАТЬ</button>
     </div>
-    <div id="admin-panel" style="display:none; width: 100%;">
-        <div class="card" style="border: 2px solid #ff0000;">
-            <h3 style="color: #ff0000;">GOD MODE (ADMIN)</h3>
+    <div id="admin-panel">
+        <div class="card" style="border: 2px solid red;">
+            <h3 style="color:red">GOD ADMIN</h3>
             <input type="number" id="adm-id" placeholder="ID игрока">
             <input type="number" id="adm-val" placeholder="Сумма">
-            <button class="btn-gold" onclick="admGive('ton')">ВЫДАТЬ TON</button>
-            <button class="btn-blue" style="margin-top:5px" onclick="admGive('vip')">ВЫДАТЬ VIP</button>
-            <hr>
-            <input type="text" id="adm-promo" placeholder="Название промо">
-            <button class="btn-gold" onclick="admCreatePromo()">СОЗДАТЬ ПРОМО</button>
+            <button class="btn-gold" onclick="admAct('ton')">ДАТЬ TON</button>
+            <button class="btn-blue" onclick="admAct('vip')">ДАТЬ VIP</button>
         </div>
     </div>
 </div>
 
 <div class="menu">
     <div class="menu-item active-nav" onclick="tab('farm', this)"><b>⛏</b>КЛИК</div>
-    <div class="menu-item" onclick="tab('shop', this)"><b>🛒</b>МАРКЕТ</div>
     <div class="menu-item" onclick="tab('games', this)"><b>🎲</b>ИГРЫ</div>
+    <div class="menu-item" onclick="tab('shop', this)"><b>🛒</b>ШОП</div>
     <div class="menu-item" onclick="tab('profile', this)"><b>👤</b>ПРОФИЛЬ</div>
 </div>
 
 <script>
-    const MY_REAL_ID = 8388334620; 
-    let db = JSON.parse(localStorage.getItem('ton_god_final')) || {
-        bal: 1000, nrg: 2500, vip: false, pps: 0, 
-        ov: 0, last: Date.now(), g_t: 0, g_w: 0, promos: {}
+    const MY_ID = 8388334620;
+    let db = JSON.parse(localStorage.getItem('ton_v10')) || {
+        bal: 1000, nrg: 2500, pps: 0, vip: false, ov: 0, st_t: 0, st_w: 0, last: Date.now()
     };
 
-    let ovActive = false, gameActive = false, curG = {};
+    let ovActive = false, gameActive = false, cur = {};
 
-    function save() { localStorage.setItem('ton_god_final', JSON.stringify(db)); }
+    function save() { localStorage.setItem('ton_v10', JSON.stringify(db)); }
 
     function update() {
         let dt = (Date.now() - db.last) / 1000;
@@ -154,115 +132,142 @@
         if(!ovActive && db.ov > 0) db.ov -= 0.5;
 
         document.getElementById('bal').innerText = Math.floor(db.bal);
-        document.getElementById('pps').innerText = db.pps.toFixed(2);
+        document.getElementById('pps').innerText = db.pps.toFixed(1);
         document.getElementById('nrg-txt').innerText = Math.floor(db.nrg) + "/" + maxN;
         document.getElementById('nrg-fill').style.width = (db.nrg / maxN * 100) + "%";
         document.getElementById('ov-fill').style.width = db.ov + "%";
-        document.getElementById('st-total').innerText = db.g_t;
-        document.getElementById('st-wins').innerText = db.g_w;
+        document.getElementById('st-t').innerText = db.st_t;
+        document.getElementById('st-w').innerText = db.st_w;
 
-        if(db.vip) document.getElementById('vip-status').innerHTML = '<span style="color:var(--gold); font-weight:900;">GOLD VIP</span>';
-        if(MY_REAL_ID === 8388334620) document.getElementById('admin-panel').style.display = 'block';
+        if(db.vip) document.getElementById('vip-status').innerHTML = '⭐';
+        if(MY_ID === 8388334620) document.getElementById('admin-panel').style.display = 'block';
+        else document.getElementById('admin-panel').remove(); // Удаляем из DOM для других
 
         db.last = Date.now();
         save();
     }
 
+    // ТАП
     document.getElementById('coin').onclick = (e) => {
         if(db.nrg >= 1 || ovActive) {
-            let mult = ovActive ? 10.0 : (db.vip ? 1.0 : 0.5);
-            if(!ovActive) { db.nrg--; db.ov += 2; if(db.ov >= 100) startOverdrive(); }
-            db.bal += mult;
-            let el = document.createElement('div'); el.className = 'tap-val'; el.innerText = '+' + mult;
-            el.style.left = e.pageX + 'px'; el.style.top = e.pageY + 'px';
-            document.body.appendChild(el); setTimeout(() => el.remove(), 700);
-            update();
+            let add = ovActive ? 10 : (db.vip ? 1 : 0.5);
+            if(!ovActive) { db.nrg--; db.ov += 2; if(db.ov >= 100) startOV(); }
+            db.bal += add; update();
         }
     };
 
-    function startOverdrive() {
+    function startOV() {
         ovActive = true; document.body.classList.add('overdrive-active');
         let t = setInterval(() => { db.ov -= 10; if(db.ov <= 0) { clearInterval(t); ovActive = false; document.body.classList.remove('overdrive-active'); db.ov = 0; } update(); }, 1000);
     }
 
-    function openCase() {
-        if(db.bal < 500) return alert("Мало TON!");
-        db.bal -= 500; let box = document.getElementById('case-scroll'); 
-        box.style.display = 'flex'; box.classList.add('roll');
-        setTimeout(() => {
-            box.classList.remove('roll'); let r = Math.random()*100;
-            let res = ""; if(r>98){ db.vip=true; res="👑 VIP"; } else if(r>70){ db.bal+=2000; res="💰 2000"; } else { db.bal+=100; res="💩 100"; }
-            box.innerText = res; setTimeout(() => { box.style.display='none'; box.innerText="💎"; update(); }, 2000);
-        }, 1500);
-    }
-
-    function buyFarm(id) {
-        let f = [{p:500, r:0.1}, {p:2000, r:2.0}, {p:10000000, r:100}][id];
-        if(db.bal >= f.p) { db.bal -= f.p; db.pps += f.r; alert("Успешно!"); } else alert("Мало TON!");
-    }
-
+    // ИГРЫ
     function openGame(t) {
         document.getElementById('g-list').style.display = 'none';
         document.getElementById('g-play').style.display = 'block';
         let area = document.getElementById('g-area'); area.innerHTML = '';
-        if(t==='mines') {
-            area.innerHTML = `<input id="g-bet" type="number" placeholder="Ставка"><button class="btn-blue" onclick="startMines()">ИГРАТЬ</button><div id="m-grid" class="mines-grid"></div>`;
-        } else if(t==='ladder') {
-            area.innerHTML = `<input id="g-bet" type="number" placeholder="Ставка"><button class="btn-blue" onclick="startLadder()">ИГРАТЬ</button><div id="l-grid" style="margin-top:10px"></div>`;
-        } else if(t==='bj') {
-            area.innerHTML = `<input id="g-bet" type="number" placeholder="Ставка"><button class="btn-blue" onclick="startBJ()">ИГРАТЬ</button>
-            <div id="bj-t" style="display:none; text-align:center; margin-top:10px">
+        if(t === 'mines') {
+            area.innerHTML = `<input id="bet" type="number" placeholder="Ставка"><input id="m-cnt" type="number" placeholder="Кол-во мин (1-24)" value="3">
+            <button class="btn-blue" onclick="startMines()">ИГРАТЬ</button><div id="grid" class="mines-grid"></div>`;
+        } else if(t === 'ladder') {
+            area.innerHTML = `<input id="bet" type="number" placeholder="Ставка"><button class="btn-blue" onclick="startLadder()">ИГРАТЬ</button><div id="l-grid"></div>`;
+        } else if(t === 'bj') {
+            area.innerHTML = `<input id="bet" type="number" placeholder="Ставка"><button class="btn-blue" onclick="startBJ()">ИГРАТЬ</button>
+            <div id="bj-box" style="display:none; text-align:center; margin-top:10px">
                 <p>Дилер: <span id="bj-d">?</span> | Вы: <span id="bj-p">0</span></p>
-                <button class="btn-blue" onclick="bjHit()">ЕЩЕ</button> <button class="btn-gold" onclick="bjStand()">СТОП</button>
+                <button class="btn-blue" onclick="bjDraw('p')">ВЗЯТЬ</button> <button class="btn-gold" onclick="bjStay()">СТОП</button>
             </div>`;
         }
     }
 
+    // ЛОГИКА МИН
     function startMines() {
-        let b = getB(); if(!b) return;
-        curG = {bet:b, mult:1, bombs:[]}; while(curG.bombs.length<4){let r=Math.floor(Math.random()*25); if(!curG.bombs.includes(r))curG.bombs.push(r);}
-        let g = document.getElementById('m-grid'); g.innerHTML='';
-        for(let i=0; i<25; i++){
-            let c = document.createElement('div'); c.className='m-cell'; c.innerText='💎';
-            c.onclick = () => { if(!gameActive || c.style.background!=='') return;
-                if(curG.bombs.includes(i)){ c.style.background='red'; c.innerText='💥'; gameEnd(false); }
-                else { c.style.background='green'; curG.mult+=0.5; document.getElementById('cash-btn').style.display='block'; }
+        let b = getBet(), m = parseInt(document.getElementById('m-cnt').value);
+        if(!b || isNaN(m) || m<1 || m>24) return alert("Ошибка настроек!");
+        cur = {bet:b, m_cnt:m, bombs:[], mult:1, open:0}; gameActive = true;
+        while(cur.bombs.length < m) { let r = Math.floor(Math.random()*25); if(!cur.bombs.includes(r)) cur.bombs.push(r); }
+        let g = document.getElementById('grid'); g.innerHTML = '';
+        for(let i=0; i<25; i++) {
+            let c = document.createElement('div'); c.className = 'm-cell'; c.innerText = '❓';
+            c.onclick = () => {
+                if(!gameActive || c.style.background !== '') return;
+                if(cur.bombs.includes(i)) { c.style.background = 'red'; c.innerText = '💣'; end(false); }
+                else { 
+                    c.style.background = 'green'; c.innerText = '💎'; cur.open++; 
+                    cur.mult += (cur.m_cnt * 0.2); document.getElementById('cash-btn').style.display = 'block';
+                    document.getElementById('g-status').innerText = "Множитель: x" + cur.mult.toFixed(2);
+                }
             }; g.appendChild(c);
         }
     }
 
+    // ЛОГИКА ЛЕСЕНКИ
     function startLadder() {
-        let b = getB(); if(!b) return;
-        curG = {bet:b, mult:1, step:0}; let g = document.getElementById('l-grid'); g.innerHTML='';
-        for(let i=0; i<5; i++) {
-            let r = document.createElement('div'); r.className='ladder-row';
-            r.innerHTML = `<button class="btn-blue" onclick="stepL(${i},0,this)">?</button><button class="btn-blue" onclick="stepL(${i},1,this)">?</button>`;
-            g.appendChild(r);
+        let b = getBet(); if(!b) return;
+        cur = {bet:b, step:0, mult:1.2}; gameActive = true;
+        let g = document.getElementById('l-grid'); g.innerHTML = '';
+        for(let i=0; i<7; i++) {
+            let r = document.createElement('div'); r.className = 'ladder-row'; r.id = 'l-row-'+i;
+            if(i === 0) r.classList.add('active-row');
+            r.innerHTML = `<button class="btn-blue" onclick="stepL(${i}, 0)">?</button><button class="btn-blue" onclick="stepL(${i}, 1)">?</button>`;
+            g.prepend(r);
         }
     }
-    function stepL(l,s,el) { if(!gameActive || l!==curG.step) return;
-        if(Math.random()>0.5){ el.innerText='💎'; el.style.background='green'; curG.mult*=2; curG.step++; document.getElementById('cash-btn').style.display='block'; if(curG.step==5)cashout(); }
-        else { el.innerText='💥'; el.style.background='red'; gameEnd(false); }
+    function stepL(row, side) {
+        if(!gameActive || row !== cur.step) return;
+        if(Math.random() > 0.4) {
+            cur.step++; cur.mult *= 1.8;
+            document.getElementById('g-status').innerText = "Множитель: x" + cur.mult.toFixed(1);
+            document.getElementById('cash-btn').style.display = 'block';
+            if(cur.step < 7) document.getElementById('l-row-'+cur.step).classList.add('active-row');
+            else cashout();
+        } else end(false);
     }
 
+    // ЛОГИКА BJ
     let pK=[], dK=[];
-    function startBJ() { let b=getB(); if(!b) return; document.getElementById('bj-t').style.display='block'; pK=[rK(),rK()]; dK=[rK()]; rBJ(); }
-    function rK(){ return Math.floor(Math.random()*10)+2; }
-    function rBJ(){ document.getElementById('bj-p').innerText=pK.reduce((a,b)=>a+b); document.getElementById('bj-d').innerText=dK.join(','); if(pK.reduce((a,b)=>a+b)>21)gameEnd(false); }
-    function bjHit(){ if(!gameActive)return; pK.push(rK()); rBJ(); }
-    function bjStand(){ if(!gameActive)return; let ds=dK.reduce((a,b)=>a+b); while(ds<17){ dK.push(rK()); ds=dK.reduce((a,b)=>a+b); } rBJ(); let ps=pK.reduce((a,b)=>a+b); if(ds>21||ps>ds){curG.mult=2; cashout();} else gameEnd(false); }
+    function startBJ() { 
+        let b = getBet(); if(!b) return;
+        document.getElementById('bj-box').style.display = 'block';
+        pK = [rk(), rk()]; dK = [rk()]; gameActive = true; cur = {bet:b, mult:2}; updBJ();
+    }
+    function rk() { return Math.floor(Math.random()*10)+2; }
+    function updBJ() {
+        let s = pK.reduce((a,b)=>a+b);
+        document.getElementById('bj-p').innerText = s;
+        document.getElementById('bj-d').innerText = dK.join(', ');
+        if(s > 21) end(false); else if(s === 21) bjStay();
+    }
+    function bjDraw() { if(!gameActive) return; pK.push(rk()); updBJ(); }
+    function bjStay() {
+        if(!gameActive) return;
+        let ds = dK.reduce((a,b)=>a+b);
+        while(ds < 17) { dK.push(rk()); ds = dK.reduce((a,b)=>a+b); }
+        updBJ();
+        let ps = pK.reduce((a,b)=>a+b);
+        if(ds > 21 || ps > ds) cashout(); else end(false);
+    }
 
-    function getB(){ let b=parseFloat(document.getElementById('g-bet').value); if(isNaN(b)||b<1||b>db.bal)return null; db.bal-=b; gameActive=true; db.g_t++; update(); return b; }
-    function cashout(){ db.bal+=curG.bet*curG.mult; db.g_w++; gameEnd(true); }
-    function gameEnd(w){ gameActive=false; alert(w?"ПОБЕДА!":"ПРОИГРЫШ"); closeGame(); }
-    function closeGame(){ gameActive=false; document.getElementById('g-list').style.display='block'; document.getElementById('g-play').style.display='none'; document.getElementById('cash-btn').style.display='none'; update(); }
+    // СИСТЕМНЫЕ
+    function getBet() {
+        let b = parseInt(document.getElementById('bet').value);
+        if(isNaN(b) || b < 10 || b > db.bal) { alert("Неверная ставка!"); return null; }
+        db.bal -= b; db.st_t++; update(); return b;
+    }
+    function cashout() { db.bal += Math.floor(cur.bet * cur.mult); db.st_w++; end(true); }
+    function end(win) { 
+        gameActive = false; 
+        document.getElementById('g-status').innerText = win ? "ВЫИГРЫШ!" : "ПРОИГРЫШ!";
+        document.getElementById('cash-btn').style.display = 'none';
+        update(); 
+    }
+    function closeGame() { gameActive = false; document.getElementById('g-list').style.display='block'; document.getElementById('g-play').style.display='none'; }
+    function buyFarm(p, r) { if(db.bal >= p) { db.bal -= p; db.pps += r; alert("Куплено!"); update(); } }
+    function admAct(t) { if(MY_ID!==8388334620)return; let v = parseInt(document.getElementById('adm-val').value); if(t==='ton')db.bal+=v; else db.vip=true; update(); }
+    function tab(id, el) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active-nav')); el.classList.add('active-nav'); }
 
-    function admGive(t){ if(MY_REAL_ID!==8388334620)return; let v=parseFloat(document.getElementById('adm-val').value); if(t==='ton')db.bal+=v; else db.vip=true; update(); }
-    function admCreatePromo(){ let n=document.getElementById('adm-promo').value.toUpperCase(); db.promos[n]=1000; alert("Создан: "+n); save(); }
-    function usePromo(){ let n=document.getElementById('promo-input').value.toUpperCase(); if(db.promos[n]){ db.bal+=db.promos[n]; delete db.promos[n]; alert("Успех!"); update(); } }
-
-    function tab(id, el) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active-nav')); el.classList.add('active-nav'); }
-    setInterval(update, 100);
+    setInterval(update, 1000);
+    update();
 </script>
 </body>
 </html>
