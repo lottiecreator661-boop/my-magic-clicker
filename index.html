@@ -3,320 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON EMPIRE DIAMOND</title>
+    <title>TON EMPIRE: GOD MODE</title>
     <style>
-        :root { --blue: #00d2ff; --pink: #3a7bd5; --glass: rgba(255, 255, 255, 0.1); --diamond: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%); }
-        body { background: #02050a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
+        :root { --blue: #00d2ff; --neon: #00f2ff; --glass: rgba(255, 255, 255, 0.07); --gold: #ffd700; }
+        body { background: #020408; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; transition: 0.3s; }
         
-        /* Свечение и Алмазный стиль */
-        .glass-card { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 20px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.1); padding: 15px; margin: 10px 0; width: 90%; }
-        .btn-diamond { background: var(--diamond); border: none; color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; text-shadow: 0 0 5px rgba(255,255,255,0.5); box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); width: 100%; transition: 0.2s; }
-        .btn-diamond:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* Эффект Overdrive */
+        .overdrive-active { background: radial-gradient(circle, #1a0033 0%, #020408 100%) !important; box-shadow: inset 0 0 100px #ff00ff !important; }
+        .overdrive-active #coin { transform: scale(1.1); box-shadow: 0 0 60px #ff00ff !important; filter: hue-rotate(280deg); }
 
-        /* Клик анимация */
-        .tap-anim { position: absolute; color: var(--blue); font-weight: 900; font-size: 28px; pointer-events: none; animation: flyUp 0.8s ease-out forwards; z-index: 100; }
-        @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-120px); } }
+        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--blue); backdrop-filter: blur(10px); z-index: 10; }
+        .balance { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--blue); }
 
-        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass); background: rgba(0,0,0,0.5); }
-        .balance { font-size: 24px; font-weight: 900; color: var(--blue); }
-
-        .tab-content { display: none; padding: 20px; height: 75vh; overflow-y: auto; flex-direction: column; align-items: center; }
+        .tab-content { display: none; padding: 20px; height: 78vh; overflow-y: auto; flex-direction: column; align-items: center; padding-bottom: 120px; }
         .active { display: flex; }
 
-        /* Coin */
-        #coin { width: 180px; height: 180px; background: var(--diamond); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 0 40px var(--blue); border: 4px solid #fff; margin: 20px 0; cursor: pointer; }
-        
+        /* Coin & Overdrive Bar */
+        #coin { width: 180px; height: 180px; background: linear-gradient(135deg, var(--blue), #3a7bd5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 0 30px var(--blue); border: 4px solid #fff; cursor: pointer; position: relative; transition: 0.1s; z-index: 5; }
+        .ov-container { width: 80%; height: 6px; background: #111; border-radius: 10px; margin-top: 20px; overflow: hidden; border: 1px solid #333; }
+        #ov-fill { width: 0%; height: 100%; background: #ff00ff; box-shadow: 0 0 10px #ff00ff; transition: 0.1s; }
+
+        /* UI Cards */
+        .card { background: var(--glass); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 18px; padding: 15px; margin: 10px 0; width: 100%; box-sizing: border-box; backdrop-filter: blur(5px); position: relative; overflow: hidden; }
+        .btn-gold { background: linear-gradient(90deg, #ffd700, #ff8c00); border: none; color: #000; padding: 12px; border-radius: 12px; font-weight: 900; width: 100%; cursor: pointer; }
+        .btn-blue { background: linear-gradient(90deg, var(--blue), #3a7bd5); border: none; color: #fff; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
+
+        /* Animations */
+        .tap-val { position: absolute; font-weight: 900; font-size: 32px; color: var(--blue); pointer-events: none; animation: float 0.7s ease-out forwards; z-index: 20; }
+        @keyframes float { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-150px) scale(1.5); } }
+
         /* Games Grid */
-        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 15px 0; }
-        .m-cell { background: rgba(255,255,255,0.05); width: 50px; height: 50px; border-radius: 8px; border: 1px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; }
+        .m-cell { background: rgba(255,255,255,0.05); width: 55px; height: 55px; border-radius: 10px; border: 1px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 22px; }
 
-        .menu { position: fixed; bottom: 0; width: 100%; display: flex; background: #050a14; padding: 10px 0 30px; border-top: 1px solid var(--blue); }
-        .menu-item { flex: 1; text-align: center; color: #666; cursor: pointer; font-size: 11px; }
+        .menu { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(5, 10, 20, 0.95); padding: 15px 0 30px; border-top: 1px solid var(--blue); z-index: 100; }
+        .menu-item { flex: 1; text-align: center; color: #555; font-size: 10px; font-weight: bold; }
         .menu-item.active-nav { color: var(--blue); }
-
-        .vip-badge { background: linear-gradient(45deg, #ffd700, #ff8c00); color: black; padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: bold; }
+        .menu-item b { font-size: 22px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <div>
-        <div class="balance"><span id="bal">0.00</span> <small>TON</small></div>
-        <div id="pps" style="color: #00ff88; font-size: 11px;">+0.00/s</div>
+        <div class="balance"><span id="bal">0.00</span> TON</div>
+        <div style="color: #00ff88; font-size: 12px; font-weight: bold;">PASSIVE: +<span id="pps">0.00</span>/s</div>
     </div>
-    <div id="vip-info"></div>
+    <div id="vip-status"></div>
 </div>
 
 <div id="farm" class="tab-content active">
     <div id="coin">💎</div>
-    <div class="glass-card" style="text-align: center;">
-        <div style="display:flex; justify-content:space-between;"><span>⚡ Энергия</span><span id="nrg-txt">0/0</span></div>
-        <div style="width:100%; height:8px; background:#111; border-radius:5px; margin-top:5px;">
-            <div id="nrg-fill" style="height:100%; background:var(--blue); border-radius:5px; transition: 0.2s;"></div>
+    <div class="ov-container"><div id="ov-fill"></div></div>
+    <div style="font-size: 10px; color: #ff00ff; margin-top: 5px; font-weight: bold;">OVERDRIVE METER</div>
+
+    <div class="card" style="margin-top: 30px; text-align: center;">
+        <div style="display:flex; justify-content:space-between; font-size: 14px;">
+            <span>⚡ ENERGY</span><span id="nrg-txt">0/0</span>
+        </div>
+        <div style="width:100%; height:10px; background:#111; border-radius:10px; margin-top:8px; border: 1px solid #333;">
+            <div id="nrg-fill" style="height:100%; background:var(--blue); border-radius:10px; transition: 0.1s;"></div>
         </div>
     </div>
 </div>
 
-<div id="mine" class="tab-content">
-    <div class="glass-card">
-        <h4>GPU RTX 3060</h4>
-        <p>Доход: 0.05/сек | Цена: 500 TON</p>
-        <button class="btn-diamond" onclick="buyMine(0)">КУПИТЬ</button>
+<div id="shop" class="tab-content">
+    <div class="card" style="border: 1px solid var(--gold);">
+        <h3 style="color: var(--gold); margin: 0;">📦 ЛУТБОКС (CASE)</h3>
+        <p style="font-size: 12px;">Шанс на VIP или 50,000 TON!</p>
+        <button class="btn-gold" onclick="openCase()">ОТКРЫТЬ (500 TON)</button>
     </div>
-    <div class="glass-card">
-        <h4>ASIC S19</h4>
-        <p>Доход: 0.10/сек | Цена: 1000 TON</p>
-        <button class="btn-diamond" onclick="buyMine(1)">КУПИТЬ</button>
+    <div class="card">
+        <h3>❄️ ОХЛАЖДЕНИЕ</h3>
+        <p style="font-size: 12px;">Восстанавливает доход майнинга до 100%</p>
+        <button class="btn-blue" onclick="coolDown()">ОХЛАДИТЬ ФЕРМЫ</button>
     </div>
-    <div class="glass-card">
-        <h4>SERVER CLOUD</h4>
-        <p>Доход: 0.20/сек | Цена: 1500 TON</p>
-        <button class="btn-diamond" onclick="buyMine(2)">КУПИТЬ</button>
-    </div>
-    <div class="glass-card" style="border-color: gold;">
-        <h4 style="color: gold;">ELITE ANTMINER</h4>
-        <p>Доход: 100.0/сек | Цена: 2.0M TON</p>
-        <button class="btn-diamond" onclick="buyMine(3)">КУПИТЬ</button>
+    <div class="card">
+        <h3>🏢 ELITE VIP</h3>
+        <p style="font-size: 12px;">Клик: 1.0 | Энергия: 25,000 | Overdrive x2</p>
+        <button class="btn-blue" onclick="window.location.href='https://t.me/fresei'">КУПИТЬ У @FRESEI</button>
     </div>
 </div>
 
 <div id="games" class="tab-content">
-    <div id="g-list" style="width:100%">
-        <div class="glass-card" onclick="openG('mines')">💣 MINES (ALMAZ)</div>
-        <div class="glass-card" onclick="openG('ladder')">🪜 LADDER (X1000)</div>
-        <div class="glass-card" onclick="openG('bj')">🃏 BLACKJACK</div>
+    <div id="g-list" style="width: 100%;">
+        <div class="card" onclick="openGame('mines')">💎 DIAMOND MINES</div>
+        <div class="card" onclick="openGame('bj')">🃏 BLACKJACK PRO</div>
     </div>
-    <div id="g-play" style="display:none; width:100%">
-        <h3 id="g-title" style="color:var(--blue)">ИГРА</h3>
+    <div id="g-play" style="display:none; width: 100%;">
+        <h2 id="g-title" style="color: var(--blue);">GAME</h2>
         <div id="g-area"></div>
-        <div id="g-status" style="margin:10px; font-weight:bold; color:gold"></div>
-        <button id="cash-btn" class="btn-diamond" style="display:none; background:#00ff88; margin-bottom:10px" onclick="cashout()">ЗАБРАТЬ</button>
-        <button id="back-btn" class="btn-diamond" style="background:#444" onclick="closeG()">НАЗАД</button>
+        <div id="g-status" style="color: var(--gold); font-weight: 900; margin: 10px;"></div>
+        <button id="cash-btn" class="btn-gold" style="display:none; margin-bottom: 10px;" onclick="cashout()">ЗАБРАТЬ КЭШ</button>
+        <button id="back-btn" class="btn-blue" style="background: #333;" onclick="closeGame()">НАЗАД</button>
     </div>
 </div>
 
 <div id="profile" class="tab-content">
-    <div id="prof-vip"></div>
-    <div class="glass-card">
-        <h3>РЕФЕРАЛЬНАЯ СИСТЕМА</h3>
-        <p style="font-size:12px">Пригласи друга и получи 15% его кликов!</p>
-        <input class="btn-diamond" style="background:#111" readonly value="t.me/ton_emp_bot?ref=8388334620">
+    <div class="card">
+        <h3>ВАШ ID: <span id="my-id">Загрузка...</span></h3>
+        <p>Статус: <span id="my-status">Обычный</span></p>
     </div>
-    <button class="btn-diamond" style="background:#ef4444; margin-top:20px" onclick="openAdmin()">АДМИН ПАНЕЛЬ</button>
+    <div id="admin-panel" style="display:none; width: 100%;">
+        <div class="card" style="border: 2px solid #ff0000;">
+            <h3 style="color: #ff0000;">GOD MODE (ADMIN)</h3>
+            <button class="btn-gold" style="background: #ff0000; color: white;" onclick="db.bal += 1000000; update();">+1,000,000 TON</button>
+            <button class="btn-blue" style="margin-top: 5px;" onclick="db.vip = true; update();">ВКЛЮЧИТЬ VIP</button>
+        </div>
+    </div>
 </div>
 
 <div class="menu">
-    <div class="menu-item active-nav" onclick="tab('farm', this)">💎<br>Клик</div>
-    <div class="menu-item" onclick="tab('mine', this)">🚀<br>Майнинг</div>
-    <div class="menu-item" onclick="tab('games', this)">🎲<br>Игры</div>
-    <div class="menu-item" onclick="tab('profile', this)">👤<br>Профиль</div>
+    <div class="menu-item active-nav" onclick="tab('farm', this)"><b>⛏</b>КЛИК</div>
+    <div class="menu-item" onclick="tab('shop', this)"><b>🛒</b>МАРКЕТ</div>
+    <div class="menu-item" onclick="tab('games', this)"><b>🎲</b>ИГРЫ</div>
+    <div class="menu-item" onclick="tab('profile', this)"><b>👤</b>ПРОФИЛЬ</div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('ton_diamond_save')) || {
-        bal: 500, nrg: 2500, vip: false, clk: 0, 
-        mines_bought: [0,0,0,0], pps: 0, last: Date.now()
+    const MY_REAL_ID = 8388334620; 
+    let db = JSON.parse(localStorage.getItem('ton_empire_god_v4')) || {
+        bal: 1000, nrg: 25000, vip: false, pps: 5.0, 
+        ov: 0, last: Date.now()
     };
 
-    function save() { localStorage.setItem('ton_diamond_save', JSON.stringify(db)); }
+    let ovActive = false;
+    let gameActive = false;
+
+    function save() { localStorage.setItem('ton_empire_god_v4', JSON.stringify(db)); }
 
     function update() {
         let now = Date.now();
         let dt = (now - db.last) / 1000;
+        
+        // Пассивный доход
         db.bal += db.pps * dt;
         
+        // Энергия
         let maxN = db.vip ? 25000 : 2500;
-        if(db.nrg < maxN) db.nrg = Math.min(maxN, db.nrg + (dt * 5));
+        if(db.nrg < maxN) db.nrg = Math.min(maxN, db.nrg + (dt * 10));
 
-        document.getElementById('bal').innerText = db.bal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('nrg-txt').innerText = Math.floor(db.nrg) + " / " + maxN;
+        // Overdrive деградация
+        if(!ovActive && db.ov > 0) db.ov -= 0.5;
+
+        document.getElementById('bal').innerText = db.bal.toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById('pps').innerText = db.pps.toFixed(2);
+        document.getElementById('nrg-txt').innerText = Math.floor(db.nrg) + "/" + maxN;
         document.getElementById('nrg-fill').style.width = (db.nrg / maxN * 100) + "%";
-        document.getElementById('pps').innerText = "+" + db.pps.toFixed(2) + "/s";
-        
+        document.getElementById('ov-fill').style.width = db.ov + "%";
+        document.getElementById('my-id').innerText = MY_REAL_ID;
+
         if(db.vip) {
-            document.getElementById('vip-info').innerHTML = '<span class="vip-badge">VIP АККАУНТ</span>';
-            document.getElementById('prof-vip').innerHTML = '<div class="glass-card" style="border-color:gold">🏆 ВЫ ELITE ИГРОК</div>';
+            document.getElementById('vip-status').innerHTML = '<span style="color:var(--gold); font-weight:900;">GOLD VIP</span>';
+            document.getElementById('my-status').innerText = "ELITE МАГНАТ";
         }
+        
+        // Проверка админа
+        if(MY_REAL_ID === 8388334620) {
+            document.getElementById('admin-panel').style.display = 'block';
+        }
+
         db.last = now;
         save();
     }
 
-    // ТАПАЛКА С АНИМАЦИЕЙ
+    // ТАПАЛКА С ОВЕРДРАЙВОМ
     document.getElementById('coin').onclick = (e) => {
-        if(db.nrg >= 1) {
-            let pwr = db.vip ? 1.0 : 0.5;
-            db.nrg--; db.bal += pwr;
+        if(db.nrg >= 1 || ovActive) {
+            let mult = ovActive ? 10.0 : (db.vip ? 1.0 : 0.5);
+            if(!ovActive) db.nrg--;
+            db.bal += mult;
             
-            let a = document.createElement('div');
-            a.className = 'tap-anim';
-            a.innerText = '+' + pwr;
-            a.style.left = e.pageX + 'px';
-            a.style.top = e.pageY + 'px';
-            document.body.appendChild(a);
-            setTimeout(() => a.remove(), 800);
+            if(!ovActive) {
+                db.ov += 2;
+                if(db.ov >= 100) startOverdrive();
+            }
+
+            // Анимация
+            let el = document.createElement('div');
+            el.className = 'tap-val';
+            el.innerText = '+' + mult;
+            el.style.left = e.pageX + 'px';
+            el.style.top = e.pageY + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 700);
             update();
         }
     };
 
-    // МАЙНИНГ
-    const M_DATA = [
-        {p: 500, i: 0.05}, {p: 1000, i: 0.10}, {p: 1500, i: 0.20}, {p: 2000000, i: 100}
-    ];
-    function buyMine(id) {
-        if(db.bal >= M_DATA[id].p) {
-            db.bal -= M_DATA[id].p;
-            db.pps += M_DATA[id].i;
-            alert("Поздравляем! Доход увеличен.");
+    function startOverdrive() {
+        ovActive = true;
+        document.body.classList.add('overdrive-active');
+        let timer = setInterval(() => {
+            db.ov -= 10;
+            if(db.ov <= 0) {
+                clearInterval(timer);
+                ovActive = false;
+                document.body.classList.remove('overdrive-active');
+                db.ov = 0;
+            }
             update();
-        } else alert("Не хватает TON!");
+        }, 1000);
+    }
+
+    // КЕЙСЫ
+    function openCase() {
+        if(db.bal < 500) return alert("Мало TON!");
+        db.bal -= 500;
+        let r = Math.random() * 100;
+        if(r > 98) { db.vip = true; alert("🔥 ЛЕГЕНДАРНО: ВЫПАЛ VIP СТАТУС!"); }
+        else if(r > 80) { db.bal += 5000; alert("💰 ЗОЛОТО: +5,000 TON!"); }
+        else { db.bal += 50; alert("💩 МУСОР: +50 TON"); }
+        update();
     }
 
     // ИГРЫ
-    let cur = { active: false, bet: 0, mult: 1 };
-
-    function openG(t) {
+    let curG = { bet: 0, mult: 1, bombs: [] };
+    function openGame(t) {
         document.getElementById('g-list').style.display = 'none';
         document.getElementById('g-play').style.display = 'block';
         let area = document.getElementById('g-area');
         area.innerHTML = '';
-        
         if(t === 'mines') {
             document.getElementById('g-title').innerText = "DIAMOND MINES";
-            area.innerHTML = `
-                <input id="m-bet" class="btn-diamond" style="background:#111; margin-bottom:10px;" type="number" placeholder="СТАВКА">
-                <button id="start-m-btn" class="btn-diamond" onclick="startMines()">ИГРАТЬ</button>
-                <div id="m-grid" class="mines-grid"></div>
-            `;
-        } else if(t === 'ladder') {
-            document.getElementById('g-title').innerText = "DIAMOND LADDER";
-            area.innerHTML = `
-                <input id="l-bet" class="btn-diamond" style="background:#111; margin-bottom:10px;" type="number" placeholder="СТАВКА">
-                <button id="start-l-btn" class="btn-diamond" onclick="startLadder()">НАЧАТЬ ВОСХОЖДЕНИЕ</button>
-                <div id="l-grid" style="display:flex; flex-direction:column-reverse; gap:5px; margin-top:15px;"></div>
-            `;
-        } else if(t === 'bj') {
-            document.getElementById('g-title').innerText = "BLACKJACK";
-            area.innerHTML = `
-                <input id="bj-bet" class="btn-diamond" style="background:#111; margin-bottom:10px;" type="number" placeholder="СТАВКА">
-                <button id="start-bj-btn" class="btn-diamond" onclick="startBJ()">ИГРАТЬ</button>
-                <div id="bj-table" style="margin-top:10px; display:none;">
-                    <p>Дилер: <span id="d-cards"></span> (<span id="d-score">0</span>)</p>
-                    <p>Вы: <span id="p-cards"></span> (<span id="p-score">0</span>)</p>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-diamond" onclick="bjHit()">ЕЩЕ</button>
-                        <button class="btn-diamond" style="background:#ff8c00" onclick="bjStand()">СТОП</button>
-                    </div>
-                </div>
-            `;
+            area.innerHTML = `<input id="m-bet" class="btn-blue" style="background:#111; margin-bottom:10px;" type="number" placeholder="СТАВКА">
+                              <button id="m-start" class="btn-gold" onclick="startMines()">ИГРАТЬ</button><div id="m-grid" class="mines-grid"></div>`;
         }
     }
 
-    // МИНЫ ФИКС
     function startMines() {
-        if(cur.active) return;
+        if(gameActive) return;
         let b = parseFloat(document.getElementById('m-bet').value);
-        if(isNaN(b) || b < 1 || b > db.bal) return alert("Ошибка ставки!");
-        
-        db.bal -= b; cur = { active: true, bet: b, mult: 1, bombs: [] };
-        document.getElementById('start-m-btn').disabled = true;
+        if(isNaN(b) || b < 1 || b > db.bal) return;
+        db.bal -= b; gameActive = true; curG = { bet: b, mult: 1, bombs: [] };
+        document.getElementById('m-start').disabled = true;
         document.getElementById('back-btn').style.display = 'none';
-
-        while(cur.bombs.length < 4) {
+        while(curG.bombs.length < 4) {
             let r = Math.floor(Math.random()*25);
-            if(!cur.bombs.includes(r)) cur.bombs.push(r);
+            if(!curG.bombs.includes(r)) curG.bombs.push(r);
         }
-
         let grid = document.getElementById('m-grid'); grid.innerHTML = '';
         for(let i=0; i<25; i++) {
-            let cell = document.createElement('div'); cell.className = 'm-cell'; cell.innerText = '💎';
-            cell.onclick = () => {
-                if(!cur.active || cell.style.background !== '') return;
-                if(cur.bombs.includes(i)) {
-                    cell.innerText = '💣'; cell.style.background = 'red';
-                    cur.active = false; alert("БОМБА! Проигрыш."); closeG();
+            let c = document.createElement('div'); c.className = 'm-cell'; c.innerText = '💎';
+            c.onclick = () => {
+                if(!gameActive || c.style.background !== '') return;
+                if(curG.bombs.includes(i)) {
+                    c.innerText = '💥'; c.style.background = 'red';
+                    gameActive = false; alert("ВЗРЫВ!"); closeGame();
                 } else {
-                    cell.style.background = 'var(--blue)'; cur.mult += 0.5;
-                    document.getElementById('g-status').innerText = "МНОЖИТЕЛЬ: x" + cur.mult.toFixed(1);
+                    c.style.background = 'var(--blue)'; curG.mult += 0.6;
+                    document.getElementById('g-status').innerText = "МНОЖИТЕЛЬ: x" + curG.mult.toFixed(1);
                     document.getElementById('cash-btn').style.display = 'block';
                 }
-            };
-            grid.appendChild(cell);
+            }; grid.appendChild(c);
         }
         update();
-    }
-
-    // ЛЕСЕНКА
-    function startLadder() {
-        if(cur.active) return;
-        let b = parseFloat(document.getElementById('l-bet').value);
-        if(isNaN(b) || b < 1 || b > db.bal) return;
-        db.bal -= b; cur = { active: true, bet: b, mult: 1, level: 0 };
-        document.getElementById('start-l-btn').disabled = true;
-        let grid = document.getElementById('l-grid'); grid.innerHTML = '';
-        for(let i=0; i<8; i++) {
-            let row = document.createElement('div'); row.style = "display:grid; grid-template-columns: 1fr 1fr; gap:10px;";
-            row.innerHTML = `<button class="btn-diamond" style="background:rgba(255,255,255,0.1)" onclick="stepL(${i}, 0, this)">?</button>
-                             <button class="btn-diamond" style="background:rgba(255,255,255,0.1)" onclick="stepL(${i}, 1, this)">?</button>`;
-            grid.appendChild(row);
-        }
-        update();
-    }
-    function stepL(lvl, side, el) {
-        if(!cur.active || lvl !== cur.level) return;
-        let trap = Math.floor(Math.random()*2);
-        if(side === trap) {
-            el.style.background = 'red'; el.innerText = '💥'; cur.active = false; alert("Упали!"); closeG();
-        } else {
-            el.style.background = 'green'; el.innerText = '💎'; cur.mult *= 2; cur.level++;
-            document.getElementById('g-status').innerText = "МНОЖИТЕЛЬ: x" + cur.mult;
-            document.getElementById('cash-btn').style.display = 'block';
-        }
-    }
-
-    // БЛЭКДЖЕК
-    let bj = { p: [], d: [], deck: [] };
-    function startBJ() {
-        let b = parseFloat(document.getElementById('bj-bet').value);
-        if(isNaN(b) || b < 1 || b > db.bal) return;
-        db.bal -= b; cur = { active: true, bet: b };
-        document.getElementById('start-bj-btn').style.display = 'none';
-        document.getElementById('bj-table').style.display = 'block';
-        bj.p = [rC(), rC()]; bj.d = [rC()]; renderBJ();
-    }
-    function rC() { return Math.floor(Math.random()*10)+2; }
-    function renderBJ() {
-        document.getElementById('p-cards').innerText = bj.p.join(', ');
-        document.getElementById('d-cards').innerText = bj.d.join(', ');
-        let ps = bj.p.reduce((a,b)=>a+b); document.getElementById('p-score').innerText = ps;
-        if(ps > 21) { alert("Перебор!"); closeG(); }
-    }
-    function bjHit() { bj.p.push(rC()); renderBJ(); }
-    function bjStand() {
-        let ds = bj.d.reduce((a,b)=>a+b);
-        while(ds < 17) { bj.d.push(rC()); ds = bj.d.reduce((a,b)=>a+b); }
-        let ps = bj.p.reduce((a,b)=>a+b);
-        renderBJ();
-        if(ds > 21 || ps > ds) { db.bal += cur.bet * 2; alert("ПОБЕДА!"); }
-        else if(ps === ds) { db.bal += cur.bet; alert("НИЧЬЯ"); }
-        else alert("ПРОИГРЫШ");
-        closeG(); update();
     }
 
     function cashout() {
-        if(!cur.active) return;
-        db.bal += cur.bet * cur.mult;
-        cur.active = false;
-        alert("Забрали: " + (cur.bet * cur.mult).toFixed(2));
-        closeG(); update();
+        db.bal += curG.bet * curG.mult;
+        gameActive = false;
+        alert("Забрал " + (curG.bet * curG.mult).toFixed(2) + " TON!");
+        closeGame();
     }
 
-    function closeG() {
-        cur.active = false;
+    function closeGame() {
+        gameActive = false;
         document.getElementById('g-list').style.display = 'block';
         document.getElementById('g-play').style.display = 'none';
-        document.getElementById('g-status').innerText = '';
         document.getElementById('cash-btn').style.display = 'none';
         document.getElementById('back-btn').style.display = 'block';
+        document.getElementById('g-status').innerText = '';
     }
 
     function tab(id, el) {
@@ -326,18 +283,7 @@
         el.classList.add('active-nav');
     }
 
-    function openAdmin() {
-        let p = prompt("ID:");
-        if(p == "8388334620") {
-            let cmd = prompt("1-TON, 2-VIP");
-            if(cmd == "1") db.bal += 1000000;
-            if(cmd == "2") db.vip = true;
-            update();
-        }
-    }
-
-    setInterval(update, 1000);
-    update();
+    setInterval(update, 100);
 </script>
 </body>
 </html>
