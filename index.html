@@ -1,86 +1,266 @@
-// Добавь это в начало скрипта для работы с вибрацией Telegram
-let haptic = tg.HapticFeedback;
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TON Empire: ELITE EDITION</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { --accent: #0098EA; --bg: #0b0f1a; --glass: rgba(255, 255, 255, 0.07); --success: #10b981; --error: #ef4444; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Level Bar */
+        .lvl-container { padding: 5px 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass); }
+        .lvl-bar-bg { height: 4px; background: #1e293b; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        #lvl-progress { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; }
 
-function uiG(t) {
-    document.getElementById('g-list').style.display = 'none';
-    document.getElementById('g-play').style.display = 'block';
-    let area = document.getElementById('g-area');
-    cur.type = t;
-    document.getElementById('g-info').innerText = "Удачи!";
-    document.getElementById('btn-cashout').style.display = 'none';
+        .top-bar { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(10px); }
+        .balance-val { font-size: 26px; font-weight: 900; text-shadow: 0 0 20px var(--accent); }
 
-    if(t === 'mines') {
-        document.getElementById('g-title').innerText = "💣 CRYSTAL MINES";
-        area.innerHTML = `
-            <div class="glass-card">
-                <input type="number" id="mb" class="input-dark" placeholder="Ставка TON" value="10">
-                <select id="mc" class="input-dark">
-                    <option value="3">3 Бомбы (x1.2 за клик)</option>
-                    <option value="5">5 Бомб (x1.5 за клик)</option>
-                    <option value="10">10 Бомб (x2.4 за клик)</option>
-                </select>
-                <button class="btn btn-blue" onclick="startM()">НАЧАТЬ ИГРУ</button>
+        .tab-content { flex-grow: 1; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
+        .active-tab { display: flex; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mines Styles */
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; max-width: 320px; margin: 15px 0; }
+        .m-cell { aspect-ratio: 1; background: var(--glass); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+        .m-cell.open-gem { background: var(--accent); box-shadow: 0 0 15px var(--accent); border: none; }
+        .m-cell.open-bomb { background: var(--error); box-shadow: 0 0 15px var(--error); border: none; }
+
+        /* Common Elements */
+        .glass-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .btn { border: none; padding: 16px; border-radius: 16px; font-weight: 800; color: #fff; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn:active { transform: scale(0.97); }
+        .btn-blue { background: var(--accent); }
+        .btn-success { background: var(--success); }
+        .input-dark { background: #161b2a; border: 1px solid #2d3748; color: #fff; padding: 14px; border-radius: 12px; width: 100%; box-sizing: border-box; margin-bottom: 10px; text-align: center; }
+
+        .bottom-nav { background: rgba(11, 15, 26, 0.95); display: flex; justify-content: space-around; padding: 12px 0 30px 0; position: fixed; bottom: 0; width: 100%; border-top: 1px solid var(--glass); }
+        .nav-item { color: #64748b; text-align: center; font-size: 11px; }
+        .nav-item.active { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div class="lvl-container">
+        <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold;">
+            <span>RANK: <span id="rank-name">NOVICE</span></span>
+            <span>LVL <span id="lvl-val">1</span></span>
+        </div>
+        <div class="lvl-bar-bg"><div id="lvl-progress"></div></div>
+    </div>
+
+    <div class="top-bar">
+        <div>
+            <div id="balance" class="balance-val">0.00</div>
+            <div style="font-size: 10px; color: #94a3b8;">TON COINS</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="color: var(--success); font-weight: bold;">+<span id="pps">0.00</span> <small>PPS</small></div>
+            <div style="font-size: 12px;">⚡ <span id="energy">0</span></div>
+        </div>
+    </div>
+
+    <div id="tab-farm" class="tab-content active-tab">
+        <div id="coin" style="width:200px; height:200px; background:radial-gradient(#00f2ff, #0098EA); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:60px; margin: 30px 0; cursor:pointer; box-shadow: 0 0 40px rgba(0,152,234,0.3);">💎</div>
+        <div class="glass-card" style="text-align: center;">
+            <div id="energy-timer" style="font-size: 12px; color: #94a3b8;">Заряжено</div>
+            <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; margin-top: 8px;">
+                <div id="nrg-bar" style="height:100%; background: var(--accent); width: 0%; border-radius: 3px;"></div>
             </div>
-            <div id="m-grid" class="mines-grid"></div>
-        `;
-    } 
-    else if(t === 'ladder') {
-        document.getElementById('g-title').innerText = "🪜 LADDER CLIMB";
-        area.innerHTML = `
-            <div class="glass-card">
-                <input type="number" id="lb" class="input-dark" placeholder="Ставка" value="10">
-                <button class="btn btn-blue" onclick="startL()">ПОДНЯТЬСЯ</button>
-            </div>
-            <div id="l-grid" class="ladder-grid"></div>
-        `;
-    }
-}
+        </div>
+    </div>
 
-// Улучшенные Мины с тактильной отдачей
-function startM() {
-    let b = n(document.getElementById('mb').value, 0);
-    let c = parseInt(document.getElementById('mc').value);
+    <div id="tab-games" class="tab-content">
+        <div id="g-list" style="width: 100%;">
+            <div class="glass-card" onclick="uiG('mines')">💣 CRYSTAL MINES</div>
+            <div class="glass-card" onclick="uiG('wheel')">🎡 PvP WHEEL (JACKPOT)</div>
+        </div>
 
-    if (b <= 0 || b > db.bal) return alert("Проверь баланс и ставку!");
-    
-    db.bal -= b;
-    cur = { active: true, bet: b, mult: 1, type: 'mines', data: Array(25).fill(false), open: 0 };
-    
-    // Генерация бомб
-    let p = 0; 
-    while(p < c) {
-        let r = Math.floor(Math.random()*25); 
-        if(!cur.data[r]) { cur.data[r] = true; p++; }
+        <div id="g-play" style="display:none; width: 100%;">
+            <h2 id="g-title" style="margin: 0 0 15px 0;">ИГРА</h2>
+            <div id="g-area"></div>
+            <div id="g-info" style="margin: 10px; color: #f59e0b; font-weight: bold;"></div>
+            <button id="btn-cashout" class="btn btn-success" style="display:none; margin-bottom: 10px;" onclick="doCashout()">ЗАБРАТЬ ВЫИГРЫШ</button>
+            <button class="btn" style="background: #334155;" onclick="closeG()">НАЗАД</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchT('farm', this)"><b>⛏</b><br>МАЙНИНГ</div>
+        <div class="nav-item" onclick="switchT('games', this)"><b>🎲</b><br>ИГРЫ</div>
+    </div>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    let haptic = tg.HapticFeedback;
+
+    function n(v, f=0) { let res = parseFloat(v); return isNaN(res) || !isFinite(res) ? f : res; }
+
+    let saved = JSON.parse(localStorage.getItem('ton_final_elite')) || {};
+    let db = {
+        bal: n(saved.bal, 50),
+        totalEarned: n(saved.totalEarned, 0),
+        nrg: n(saved.nrg, 250),
+        pps: n(saved.pps, 0.01),
+        last: n(saved.last, Date.now()),
+        vip: saved.vip || false
+    };
+
+    let cur = { active: false, bet: 0, mult: 1, type: '', data: null, open: 0 };
+    let pot = 0;
+
+    function save() { localStorage.setItem('ton_final_elite', JSON.stringify(db)); }
+
+    function update() {
+        let now = Date.now();
+        let dt = Math.max(0, (now - db.last) / 1000);
+        
+        // Начисление PPS
+        let income = n(db.pps) * dt;
+        db.bal += income;
+        db.totalEarned += income;
+
+        // Энергия
+        let maxN = db.vip ? 10000 : 250;
+        let reg = db.vip ? 1.0 : 0.25;
+        if(db.nrg < maxN) db.nrg = Math.min(maxN, db.nrg + (dt * reg));
+
+        // Уровни (каждые 500 заработанных TON = +1 уровень)
+        let lvl = Math.floor(db.totalEarned / 500) + 1;
+        let progress = ((db.totalEarned % 500) / 500) * 100;
+        
+        // UI
+        document.getElementById('balance').innerText = db.bal.toFixed(2);
+        document.getElementById('pps').innerText = db.pps.toFixed(3);
+        document.getElementById('energy').innerText = Math.floor(db.nrg);
+        document.getElementById('nrg-bar').style.width = (db.nrg/maxN*100) + '%';
+        document.getElementById('lvl-val').innerText = lvl;
+        document.getElementById('lvl-progress').style.width = progress + '%';
+        document.getElementById('rank-name').innerText = lvl > 10 ? "ELITE" : "NOVICE";
+
+        db.last = now;
+        save();
     }
-    
-    let grid = document.getElementById('m-grid'); 
-    grid.innerHTML = '';
-    
-    for(let i=0; i<25; i++) {
-        let d = document.createElement('div');
-        d.className = 'm-cell';
-        d.innerText = '?';
-        d.onclick = () => {
-            if(!cur.active || d.classList.contains('opened')) return;
-            d.classList.add('opened');
-            
-            if(cur.data[i]) { 
-                haptic.notificationOccurred('error'); // Вибрация при проигрыше
-                d.innerText = '💣'; d.style.background = '#ef4444'; 
-                cur.active = false;
-                document.getElementById('btn-cashout').style.display = 'none';
-                document.getElementById('g-info').innerText = "БУУУМ! - " + cur.bet.toFixed(2);
-            } else {
-                haptic.impactOccurred('medium'); // Легкая вибрация при успехе
-                d.innerText = '💎'; d.style.background = '#0098EA';
-                cur.open++;
-                // Формула: чем меньше клеток осталось, тем выше риск и множитель
-                cur.mult *= (1 + (c / (25 - cur.open)));
-                document.getElementById('g-info').innerText = `Множитель: x${cur.mult.toFixed(2)} (Выигрыш: ${(cur.bet*cur.mult).toFixed(2)})`;
-                document.getElementById('btn-cashout').style.display = 'block';
+
+    // --- GAME ENGINE ---
+    function uiG(t) {
+        document.getElementById('g-list').style.display = 'none';
+        document.getElementById('g-play').style.display = 'block';
+        cur.type = t; cur.active = false;
+        let area = document.getElementById('g-area');
+        
+        if(t === 'mines') {
+            document.getElementById('g-title').innerText = "💣 CRYSTAL MINES";
+            area.innerHTML = `
+                <input type="number" id="mb" class="input-dark" placeholder="Ставка" value="10">
+                <input type="number" id="mc" class="input-dark" placeholder="Мины (1-24)" value="3">
+                <button class="btn btn-blue" onclick="startM()">ИГРАТЬ</button>
+                <div id="m-grid" class="mines-grid"></div>
+            `;
+        } else if (t === 'wheel') {
+            document.getElementById('g-title').innerText = "🎡 PvP WHEEL";
+            area.innerHTML = `
+                <div class="glass-card" style="text-align:center;">
+                    <div id="w-timer" style="font-size:20px; color:var(--accent); font-weight:900;">ЖДЕМ СТАВОК...</div>
+                    <div id="w-pot" style="margin:10px 0;">Банк: 0.00 TON</div>
+                    <input type="number" id="wb" class="input-dark" placeholder="Ваша ставка">
+                    <button class="btn btn-blue" onclick="startWheel()">ПОСТАВИТЬ</button>
+                </div>
+            `;
+        }
+    }
+
+    function startM() {
+        let b = n(document.getElementById('mb').value);
+        let c = Math.min(24, Math.max(1, parseInt(document.getElementById('mc').value)));
+        if(b <= 0 || b > db.bal) return alert("Ошибка ставки!");
+
+        db.bal -= b; haptic.impactOccurred('medium');
+        cur = { active: true, bet: b, mult: 1, type: 'mines', data: Array(25).fill(false), open: 0 };
+        let p=0; while(p<c){let r=Math.floor(Math.random()*25); if(!cur.data[r]){cur.data[r]=true; p++;}}
+        
+        let grid = document.getElementById('m-grid'); grid.innerHTML = '';
+        for(let i=0; i<25; i++) {
+            let d = document.createElement('div'); d.className = 'm-cell'; d.innerText = '?';
+            d.onclick = () => {
+                if(!cur.active || d.classList.contains('opened')) return;
+                d.classList.add('opened');
+                if(cur.data[i]) {
+                    d.innerText = '💣'; d.classList.add('open-bomb'); cur.active = false;
+                    haptic.notificationOccurred('error');
+                    document.getElementById('btn-cashout').style.display = 'none';
+                } else {
+                    d.innerText = '💎'; d.classList.add('open-gem');
+                    cur.open++; cur.mult *= (1 + (c/(25-cur.open)));
+                    haptic.impactOccurred('light');
+                    document.getElementById('g-info').innerText = `x${cur.mult.toFixed(2)} | ${(cur.bet*cur.mult).toFixed(2)} TON`;
+                    document.getElementById('btn-cashout').style.display = 'block';
+                }
+            }; grid.appendChild(d);
+        }
+    }
+
+    function startWheel() {
+        let b = n(document.getElementById('wb').value);
+        if(b < 1 || b > db.bal) return alert("Мало TON!");
+        db.bal -= b; pot = b;
+        document.getElementById('w-pot').innerText = `Банк: ${pot.toFixed(2)} TON`;
+        haptic.notificationOccurred('success');
+        
+        let s = 5;
+        let t = setInterval(() => {
+            document.getElementById('w-timer').innerText = `СТАРТ ЧЕРЕЗ ${s}c`;
+            s--;
+            if(s < 0) {
+                clearInterval(t);
+                let win = Math.random() > 0.5; // 50/50 симуляция
+                if(win) {
+                    let prize = pot * 1.8;
+                    db.bal += prize; db.totalEarned += prize;
+                    alert("🎉 ПОБЕДА! + " + prize.toFixed(2));
+                } else {
+                    alert("❌ ПРОИГРЫШ!");
+                }
+                uiG('wheel');
             }
-        };
-        grid.appendChild(d);
+        }, 1000);
     }
+
+    function doCashout() {
+        if(!cur.active) return;
+        let win = cur.bet * cur.mult;
+        db.bal += win; db.totalEarned += win;
+        cur.active = false;
+        haptic.notificationOccurred('success');
+        alert("Забрал: " + win.toFixed(2) + " TON");
+        closeG();
+    }
+
+    // --- SYSTEM ---
+    document.getElementById('coin').onclick = (e) => {
+        if(db.nrg >= 1) {
+            db.nrg--; db.bal += 0.01; db.totalEarned += 0.01;
+            haptic.impactOccurred('light');
+            update();
+        }
+    };
+
+    function switchT(t, el) {
+        document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active-tab'));
+        document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.add('active-tab');
+        el.classList.add('active');
+    }
+
+    function closeG() { 
+        document.getElementById('g-list').style.display = 'block'; 
+        document.getElementById('g-play').style.display = 'none'; 
+    }
+
+    setInterval(update, 1000);
     update();
-}
+</script>
+</body>
+</html>
