@@ -3,100 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magic Clicker V2</title>
+    <title>TON Empire</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* БАЗОВЫЕ СТИЛИ И КРАСИВЫЙ ФОН */
         body {
-            background-color: #1a1a1a; color: white;
-            text-align: center; font-family: 'Arial', sans-serif;
-            margin: 0; overflow: hidden; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; position: relative;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #ffffff; text-align: center; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; overflow: hidden; display: flex; flex-direction: column;
+            height: 100vh; position: relative; user-select: none;
         }
-        .header { position: absolute; top: 20px; width: 100%; text-align: center; }
-        .level { font-size: 18px; color: #3498db; font-weight: bold; margin-bottom: 5px; }
-        .score { font-size: 36px; font-weight: bold; color: #f1c40f; }
+
+        /* ВЕРХНЯЯ ПАНЕЛЬ БАЛАНСА */
+        .top-bar {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+            padding: 15px 20px; display: flex; justify-content: space-between;
+            align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
+        }
+        .balance-box { display: flex; flex-direction: column; align-items: flex-start; }
+        .balance-title { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .balance-amount { font-size: 24px; font-weight: bold; color: #0098EA; display: flex; align-items: center; gap: 5px; }
         
+        .topup-btn {
+            background: #0098EA; color: white; border: none; padding: 8px 15px;
+            border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 152, 234, 0.4);
+        }
+        .topup-btn:active { transform: scale(0.95); }
+
+        /* КОНТЕЙНЕР ДЛЯ ВКЛАДОК */
+        .tab-content { flex-grow: 1; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; width: 100%; }
+        .active-tab { display: flex; }
+
+        /* КЛИКЕР */
+        .level-info { font-size: 16px; color: #a78bfa; margin-bottom: 30px; background: rgba(167, 139, 250, 0.1); padding: 5px 15px; border-radius: 20px; }
+        
+        /* КРАСИВАЯ КНОПКА TON */
         #coin {
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, #f1c40f, #e67e22);
+            width: 220px; height: 220px; background: radial-gradient(circle at 30% 30%, #38bdf8, #0098EA, #0284c7);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 80px; cursor: pointer; margin-top: 30px;
-            box-shadow: 0 0 40px rgba(243, 156, 18, 0.6);
-            transition: transform 0.05s; user-select: none;
-            -webkit-tap-highlight-color: transparent; margin-bottom: 30px;
+            cursor: pointer; box-shadow: 0 0 50px rgba(0, 152, 234, 0.5), inset 0 0 20px rgba(255,255,255,0.3);
+            transition: transform 0.05s; border: 4px solid rgba(255,255,255,0.1); margin-bottom: 40px;
         }
-        #coin:active { transform: scale(0.92); }
+        #coin:active { transform: scale(0.92); box-shadow: 0 0 30px rgba(0, 152, 234, 0.8); }
+        .ton-logo { width: 100px; height: 100px; fill: white; }
+
+        .energy-box { margin-top: 20px; font-size: 18px; color: #34d399; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+
+        /* МЕНЮ ИГР */
+        .games-list { width: 90%; max-height: 70vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
+        .game-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .game-info { text-align: left; }
+        .game-name { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .game-desc { font-size: 12px; color: #94a3b8; }
+        .play-btn { background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+        /* МАГАЗИН ЭНЕРГИИ */
+        .shop-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; width: 90%; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         
-        .footer { position: absolute; bottom: 30px; width: 100%; display: flex; flex-direction: column; align-items: center; }
-        .energy { font-size: 22px; color: #2ecc71; margin-bottom: 15px; font-weight: bold; }
-        
-        .shop-btn {
-            background: #9b59b6; color: white; border: none;
-            padding: 12px 30px; font-size: 18px; border-radius: 20px;
-            cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(155, 89, 182, 0.4);
-        }
-        
-        /* Окно Магазина */
-        #shop {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95); flex-direction: column;
-            align-items: center; justify-content: center; z-index: 100;
-        }
-        .shop-title { font-size: 28px; color: #f1c40f; margin-bottom: 20px; font-weight: bold; }
-        .buy-btn {
-            background: #34495e; color: white; border: 2px solid #f1c40f;
-            padding: 15px; width: 80%; font-size: 18px; border-radius: 10px;
-            margin-bottom: 15px; cursor: pointer; font-weight: bold; transition: 0.2s;
-        }
-        .buy-btn:active { background: #f1c40f; color: black; }
-        .close-shop { background: #e74c3c; border-color: #c0392b; margin-top: 20px; }
-        #shop-msg { margin-top: 15px; font-size: 18px; color: #e74c3c; font-weight: bold; text-align: center; padding: 0 20px; min-height: 50px;}
+        /* НИЖНЕЕ МЕНЮ */
+        .bottom-nav { background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; padding: 15px 0; z-index: 10; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 12px; cursor: pointer; gap: 5px; transition: 0.2s; width: 33%; }
+        .nav-item.active { color: #0098EA; }
+        .nav-icon { font-size: 24px; }
+
+        /* МОДАЛЬНЫЕ ОКНА */
+        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
+        .modal-box { background: #1e293b; border: 1px solid #334155; padding: 25px; border-radius: 20px; width: 80%; text-align: center; }
+        .modal-title { font-size: 22px; color: white; margin-bottom: 15px; font-weight: bold; }
+        .modal-input { width: 90%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 18px; text-align: center; }
+        .modal-btn { background: #10b981; color: white; border: none; padding: 12px 0; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
+        .modal-close { background: #ef4444; }
+        .modal-msg { margin-top: 15px; font-size: 16px; font-weight: bold; min-height: 24px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="level" id="level-text">Уровень: 1 (0/15000)</div>
-        <div class="score">💰 <span id="balance">0</span></div>
-    </div>
-    
-    <div id="coin">⚡️</div>
-    
-    <div class="footer">
-        <div class="energy">Энергия: <span id="energy-text">1000/1000</span></div>
-        <button class="shop-btn" onclick="openShop()">🛒 Магазин энергии</button>
+
+    <div class="top-bar">
+        <div class="balance-box">
+            <span class="balance-title">Твой Баланс</span>
+            <span class="balance-amount">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0098EA" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4-4-4 4-4z"/></svg>
+                <span id="balance">0</span> TON
+            </span>
+        </div>
+        <button class="topup-btn" onclick="openContactModal('Пополнение')">Пополнить</button>
     </div>
 
-    <div id="shop">
-        <div class="shop-title">Тайная Лавка</div>
-        <button class="buy-btn" onclick="buyEnergy(1000)">🔋 Купить 1 000 ⚡️</button>
-        <button class="buy-btn" onclick="buyEnergy(10000)">🔋 Купить 10 000 ⚡️</button>
-        <button class="buy-btn" onclick="buyEnergy(100000)">🔋 Купить 100 000 ⚡️</button>
-        <div id="shop-msg"></div>
-        <button class="buy-btn close-shop" onclick="closeShop()">❌ Закрыть лавку</button>
+    <div id="tab-clicker" class="tab-content active-tab">
+        <div class="level-info" id="level-text">🏆 Уровень: 1 (0 / 15000)</div>
+        
+        <div id="coin">
+            <svg class="ton-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 12l10 10 10-10L12 2zm0 4.5l5.5 5.5-5.5 5.5-5.5-5.5L12 6.5z"/>
+            </svg>
+        </div>
+        
+        <div class="energy-box">⚡ Энергия: <span id="energy-text">1000/1000</span></div>
+    </div>
+
+    <div id="tab-games" class="tab-content">
+        <h2 style="color: white; margin-bottom: 20px;">Казино Empire</h2>
+        <div class="games-list">
+            <div class="game-card">
+                <div class="game-info">
+                    <div class="game-name">💣 Мины</div>
+                    <div class="game-desc">Шанс: 70% | Куш: x1.5</div>
+                </div>
+                <button class="play-btn" onclick="openGameModal('Мины', 1.5, 0.7)">Играть</button>
+            </div>
+            <div class="game-card">
+                <div class="game-info">
+                    <div class="game-name">📈 Лесенка</div>
+                    <div class="game-desc">Шанс: 50% | Куш: x2.0</div>
+                </div>
+                <button class="play-btn" onclick="openGameModal('Лесенка', 2.0, 0.5)">Играть</button>
+            </div>
+            <div class="game-card">
+                <div class="game-info">
+                    <div class="game-name">🃏 Блэкджек</div>
+                    <div class="game-desc">Шанс: 30% | Куш: x3.0</div>
+                </div>
+                <button class="play-btn" onclick="openGameModal('Блэкджек', 3.0, 0.3)">Играть</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-shop" class="tab-content">
+        <h2 style="color: white; margin-bottom: 20px;">Энергетики</h2>
+        <div class="games-list">
+            <div class="shop-card">
+                <div class="game-info">
+                    <div class="game-name">🔋 Малая колба</div>
+                    <div class="game-desc">+1 000 Энергии</div>
+                </div>
+                <button class="topup-btn" onclick="openContactModal('Энергия')">Купить</button>
+            </div>
+            <div class="shop-card">
+                <div class="game-info">
+                    <div class="game-name">⚡ Средняя колба</div>
+                    <div class="game-desc">+10 000 Энергии</div>
+                </div>
+                <button class="topup-btn" onclick="openContactModal('Энергия')">Купить</button>
+            </div>
+            <div class="shop-card">
+                <div class="game-info">
+                    <div class="game-name">☢️ Реактор</div>
+                    <div class="game-desc">+100 000 Энергии</div>
+                </div>
+                <button class="topup-btn" onclick="openContactModal('Энергия')">Купить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('clicker', this)">
+            <div class="nav-icon">💎</div>
+            <div>Фарм</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('games', this)">
+            <div class="nav-icon">🎲</div>
+            <div>Игры</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('shop', this)">
+            <div class="nav-icon">🛒</div>
+            <div>Магазин</div>
+        </div>
+    </div>
+
+    <div id="contact-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="contact-title">Покупка</div>
+            <div style="color: #cbd5e1; margin-bottom: 20px;">Для покупки или пополнения напишите администратору:</div>
+            <div style="font-size: 24px; font-weight: bold; color: #0098EA; margin-bottom: 25px;">@fresei</div>
+            <button class="modal-btn modal-close" onclick="closeModals()">Закрыть</button>
+        </div>
+    </div>
+
+    <div id="game-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="game-title">Игра</div>
+            <input type="number" id="bet-amount" class="modal-input" placeholder="Сумма ставки (TON)">
+            <button class="modal-btn" onclick="playCurrentGame()">Сделать ставку</button>
+            <button class="modal-btn modal-close" onclick="closeModals()">Выйти</button>
+            <div id="game-result" class="modal-msg"></div>
+        </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand(); 
 
-        // Переменные БД
+        // БАЗА ДАННЫХ
         let balance = 0;
         let clicksTotal = 0;
         let currentEnergy = 1000;
         let lastSaveTime = Date.now();
 
-        // Элементы на экране
+        // Элементы
         const balanceEl = document.getElementById('balance');
         const levelEl = document.getElementById('level-text');
         const energyEl = document.getElementById('energy-text');
         const coin = document.getElementById('coin');
-        const shopDiv = document.getElementById('shop');
-        const shopMsg = document.getElementById('shop-msg');
 
-        // 1. ЗАГРУЗКА БАЗЫ ДАННЫХ
+        // Переменные для игр
+        let currentGameName = '';
+        let currentGameMult = 1;
+        let currentGameChance = 0;
+
+        // Загрузка
         function loadData() {
-            let saved = localStorage.getItem('magic_clicker_db');
+            let saved = localStorage.getItem('ton_empire_db');
             if (saved) {
                 let data = JSON.parse(saved);
                 balance = data.balance || 0;
@@ -106,111 +223,136 @@
             }
         }
 
-        // 2. ВЫЧИСЛЕНИЕ УРОВНЯ И ЛИМИТОВ
+        // Логика уровней
         function getLevel() {
             let lvl = Math.floor(clicksTotal / 15000) + 1;
             return lvl > 100 ? 100 : lvl;
         }
 
         function getMaxEnergy(lvl) {
-            if (lvl < 10) return 1000; // До 10 лвл = 1000
-            let tens = Math.floor(lvl / 10); // 10 лвл = 1, 20 лвл = 2
-            return tens * 10000; // 10 лвл = 10000, 20 лвл = 20000
+            if (lvl < 10) return 1000;
+            return Math.floor(lvl / 10) * 10000;
         }
 
-        // 3. ВОССТАНОВЛЕНИЕ ЭНЕРГИИ ЗА ВРЕМЯ ОТСУТСТВИЯ
         function regenOfflineEnergy() {
             let now = Date.now();
             let hoursPassed = (now - lastSaveTime) / (1000 * 60 * 60);
-            let energyToAdd = hoursPassed * 1000; // +1000 в час
-            
+            currentEnergy += hoursPassed * 1000;
             let maxE = getMaxEnergy(getLevel());
-            currentEnergy += energyToAdd;
             if (currentEnergy > maxE) currentEnergy = maxE;
             lastSaveTime = now;
         }
 
-        // 4. СОХРАНЕНИЕ В БАЗУ ДАННЫХ
         function saveData() {
-            let data = {
-                balance: balance,
-                clicksTotal: clicksTotal,
-                energy: currentEnergy,
-                lastSaveTime: Date.now()
-            };
-            localStorage.setItem('magic_clicker_db', JSON.stringify(data));
+            localStorage.setItem('ton_empire_db', JSON.stringify({
+                balance: balance, clicksTotal: clicksTotal, energy: currentEnergy, lastSaveTime: Date.now()
+            }));
         }
 
-        // 5. ОБНОВЛЕНИЕ ЭКРАНА
         function updateUI() {
-            balanceEl.innerText = balance.toLocaleString(); // Цифры с пробелами (1 000 000)
-            
+            balanceEl.innerText = Math.floor(balance).toLocaleString();
             let lvl = getLevel();
             let maxE = getMaxEnergy(lvl);
-            let nextLvlClicks = lvl * 15000;
-            
             if (lvl === 100) {
-                levelEl.innerText = `Уровень: 100 (MAX)`;
-                levelEl.style.color = '#e74c3c'; // Красный цвет на макс лвл
+                levelEl.innerText = `🏆 Уровень: 100 (МАКСИМУМ)`;
+                levelEl.style.color = '#ef4444';
             } else {
-                levelEl.innerText = `Уровень: ${lvl} (${clicksTotal}/${nextLvlClicks})`;
+                levelEl.innerText = `🏆 Уровень: ${lvl} (${clicksTotal}/${lvl * 15000})`;
             }
-            
-            energyEl.innerText = `${Math.floor(currentEnergy)} / ${maxE}`;
+            energyEl.innerText = `${Math.floor(currentEnergy)}/${maxE}`;
         }
 
-        // Запускаем игру
-        loadData();
-        regenOfflineEnergy();
-        updateUI();
+        // Инициализация
+        loadData(); regenOfflineEnergy(); updateUI();
 
-        // 6. КЛИК ПО МОНЕТЕ
+        // КЛИКЕР
         coin.addEventListener('click', () => {
             if (currentEnergy >= 1) {
                 currentEnergy -= 1;
                 clicksTotal += 1;
-                
-                let lvl = getLevel();
-                // На 100 уровне даем 1 000 000, иначе 1 монету
-                let clickPower = (lvl >= 100) ? 1000000 : 1;
-                balance += clickPower;
+                balance += (getLevel() >= 100) ? 1000000 : 1;
                 
                 if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-                
                 updateUI();
             } else {
-                // Если нет энергии - мигаем красным
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-                energyEl.style.color = '#e74c3c'; 
-                setTimeout(() => energyEl.style.color = '#2ecc71', 300);
+                energyEl.style.color = '#ef4444'; 
+                setTimeout(() => energyEl.style.color = '#34d399', 300);
             }
         });
 
-        // 7. ОНЛАЙН-РЕГЕНЕРАЦИЯ И АВТОСОХРАНЕНИЕ
-        // +1000 в час = примерно 0.27 энергии в секунду
+        // Регенерация онлайн
         setInterval(() => {
             let maxE = getMaxEnergy(getLevel());
             if (currentEnergy < maxE) {
-                currentEnergy += (1000 / 3600); // Добавляем долю секунды
+                currentEnergy += (1000 / 3600);
                 if (currentEnergy > maxE) currentEnergy = maxE;
                 updateUI();
             }
         }, 1000);
-        
-        // Автосохранение каждые 3 секунды
         setInterval(saveData, 3000);
 
-        // 8. ЛОГИКА МАГАЗИНА
-        function openShop() {
-            shopDiv.style.display = 'flex';
-            shopMsg.innerText = '';
+        // НАВИГАЦИЯ (ВКЛАДКИ)
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active-tab');
+            element.classList.add('active');
+            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
         }
-        function closeShop() {
-            shopDiv.style.display = 'none';
+
+        // МОДАЛЬНЫЕ ОКНА
+        function closeModals() {
+            document.getElementById('contact-modal').style.display = 'none';
+            document.getElementById('game-modal').style.display = 'none';
         }
-        function buyEnergy(amount) {
-            shopMsg.innerText = `Для покупки энергии напишите @fresei`;
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+
+        function openContactModal(title) {
+            document.getElementById('contact-title').innerText = title;
+            document.getElementById('contact-modal').style.display = 'flex';
+        }
+
+        function openGameModal(name, mult, chance) {
+            currentGameName = name; currentGameMult = mult; currentGameChance = chance;
+            document.getElementById('game-title').innerText = name;
+            document.getElementById('bet-amount').value = '';
+            document.getElementById('game-result').innerText = '';
+            document.getElementById('game-result').style.color = 'white';
+            document.getElementById('game-modal').style.display = 'flex';
+        }
+
+        // ЛОГИКА ИГРЫ (КАЗИНО)
+        function playCurrentGame() {
+            let input = document.getElementById('bet-amount').value;
+            let bet = parseInt(input);
+            let resBox = document.getElementById('game-result');
+
+            if (isNaN(bet) || bet <= 0) {
+                resBox.innerText = "Введите корректную ставку!"; resBox.style.color = '#ef4444'; return;
+            }
+            if (bet > balance) {
+                resBox.innerText = "Недостаточно TON!"; resBox.style.color = '#ef4444'; return;
+            }
+
+            // Списываем ставку
+            balance -= bet;
+            
+            // Вычисляем победу
+            let isWin = Math.random() < currentGameChance;
+            
+            if (isWin) {
+                let winAmount = bet * currentGameMult;
+                balance += winAmount;
+                resBox.innerText = `🎉 Победа! Вы выиграли ${winAmount} TON!`;
+                resBox.style.color = '#10b981';
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            } else {
+                resBox.innerText = `💥 Проигрыш. Вы потеряли ${bet} TON.`;
+                resBox.style.color = '#ef4444';
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            }
+            updateUI();
+            saveData();
         }
     </script>
 </body>
