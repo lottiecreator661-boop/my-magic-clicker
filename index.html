@@ -1,52 +1,193 @@
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Test</title></head>
-<body style="background:#0a0c14; color:white; text-align:center; padding:20px;">
-    <div>Баланс: <span id="balance">0</span></div>
-    <div>Энергия: <span id="energy">250</span></div>
-    <div id="energy-timer"></div>
-    <div style="width:200px; height:200px; background:gold; border-radius:50%; margin:20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; cursor:pointer;" id="coin">💎</div>
+<script>
+    let tg = window.Telegram.WebApp;
+    let userId = tg.initDataUnsafe?.user?.id || 0;
+    
+    // Функция глубокой проверки на число
+    function n(val, fallback = 0) {
+        let num = parseFloat(val);
+        return isNaN(num) || !isFinite(num) ? fallback : num;
+    }
 
-    <script>
-        let db = {
-            bal: 50,
-            nrg: 250,
-            last: Date.now()
-        };
+    let today = new Date().toLocaleDateString();
+    let saved = JSON.parse(localStorage.getItem('ton_final_elite')) || {};
+    
+    // Инициализация с защитой от пустых данных
+    let db = {
+        bal: n(saved.bal, 50),
+        nrg: n(saved.nrg, 250),
+        pps: n(saved.pps, 0),
+        clk: n(saved.clk, 0),
+        last: n(saved.last, Date.now()),
+        vip: saved.vip || false,
+        daily: n(saved.daily, 0),
+        q_date: saved.q_date || today,
+        q_list: saved.q_list || [false, false, false, false, false]
+    };
 
-        function update() {
-            let now = Date.now();
-            let dt = (now - db.last) / 1000;
-            if (db.nrg < 250) {
-                db.nrg = Math.min(250, db.nrg + dt * 0.25);
-            }
-            db.last = now;
+    if(db.q_date !== today) {
+        db.q_list = [false, false, false, false, false];
+        db.q_date = today;
+    }
 
-            document.getElementById('balance').innerText = db.bal.toFixed(2);
-            document.getElementById('energy').innerText = Math.floor(db.nrg);
+    let cur = { active: false, bet: 0, mult: 1, type: '', data: null, step: 0 };
+    let wheelSec = 30;
 
-            let remain = (250 - db.nrg) / 0.25;
-            if (db.nrg >= 250) {
-                document.getElementById('energy-timer').innerText = '⚡ Энергия полна';
-            } else {
-                let m = Math.floor(remain / 60);
-                let s = Math.floor(remain % 60);
-                document.getElementById('energy-timer').innerText = `Восстановление: ${m}:${s < 10 ? '0'+s : s}`;
-            }
+    function save() { 
+        // Перед сохранением еще раз проверяем баланс
+        db.bal = n(db.bal, 0);
+        localStorage.setItem('ton_final_elite', JSON.stringify(db)); 
+    }
+
+    function update() {
+        let now = Date.now();
+        let dt = Math.max(0, (now - db.last) / 1000);
+        
+        // Начисляем пассивку
+        db.bal = n(db.bal + (n(db.pps) * dt));
+        
+        let maxN = db.vip ? 10000 : 250;
+        let reg = db.vip ? 1.0 : 0.25;
+        
+        if(db.nrg < maxN) {
+            db.nrg = Math.min(maxN, db.nrg + (dt * reg));
+            let remain = (maxN - db.nrg) / reg;
+            let m = Math.floor(remain / 60);
+            let s = Math.floor(remain % 60);
+            document.getElementById('energy-timer').innerText = `Фулл энергия через: ${m}:${s < 10 ? '0'+s : s}`;
+        } else {
+            document.getElementById('energy-timer').innerText = "Заряжено на 100%";
         }
 
-        document.getElementById('coin').onclick = function() {
-            if (db.nrg >= 1) {
-                db.nrg--;
-                db.bal += 0.01;
-                update();
-            } else {
-                alert('Нет энергии, подожди восстановления!');
-            }
-        };
+        db.last = now;
+        
+        // Жесткий фикс вывода баланса
+        document.getElementById('balance').innerText = n(db.bal).toFixed(2);
+        document.getElementById('pps').innerText = n(db.pps).toFixed(2);
+        document.getElementById('energy').innerText = Math.floor(n(db.nrg));
+        document.getElementById('nrg-bar').style.width = (n(db.nrg)/maxN*100)+'%';
+        
+        renderQuests();
+        save();
+    }
 
-        setInterval(update, 1000);
+    // --- ИГРЫ С ЗАЩИТОЙ ОТ NaN ---
+
+    function startM() {
+        let input = document.getElementById('mb').value;
+        let b = n(input, 0); // Если ввели дичь, будет 0
+        let c = parseInt(document.getElementById('mc').value);
+
+        if (b <= 0) return alert("Введите корректную ставку!");
+        if (b > db.bal) return alert("Недостаточно баланса!");
+        if (b > 10000000) return alert("Макс. ставка 10,000,000!");
+
+        db.bal -= b;
+        cur = { active: true, bet: b, mult: 1, type: 'mines', data: Array(25).fill(false) };
+        let p=0; while(p<c){let r=Math.floor(Math.random()*25); if(!cur.data[r]){cur.data[r]=true; p++;}}
+        
+        let grid = document.getElementById('m-grid'); grid.innerHTML = '';
+        for(let i=0; i<25; i++) {
+            let d = document.createElement('div'); d.className = 'm-cell'; d.innerText = '?';
+            d.onclick = () => {
+                if(!cur.active || d.innerText !== '?') return;
+                if(cur.data[i]) { 
+                    d.innerText = '💣'; d.classList.add('open-bomb'); cur.active = false; 
+                    document.getElementById('btn-cashout').style.display = 'none';
+                    document.getElementById('g-info').innerText = "ВЗРЫВ! Потеряно: " + cur.bet.toFixed(2);
+                }
+                else { 
+                    d.innerText = '💎'; d.classList.add('open-gem'); 
+                    cur.mult += (c/4)+0.3; 
+                    document.getElementById('g-info').innerText = `Куш: ${(cur.bet*cur.mult).toFixed(2)} TON`; 
+                    document.getElementById('btn-cashout').style.display = 'block'; 
+                }
+            }; grid.appendChild(d);
+        }
         update();
-    </script>
-</body>
-</html>
+    }
+
+    function startL() {
+        let input = document.getElementById('lb').value;
+        let b = n(input, 0);
+
+        if (b <= 0) return alert("Введите ставку!");
+        if (b > db.bal) return alert("Мало TON!");
+        if (b > 10000000) return alert("Макс. ставка 10,000,000!");
+
+        db.bal -= b;
+        cur = { active: true, bet: b, mult: 1, type: 'ladder', step: 0 };
+        let grid = document.getElementById('l-grid'); grid.innerHTML = '';
+        for(let i=0; i<6; i++) {
+            let r = document.createElement('div'); r.className = 'ladder-row' + (i>0?' locked':'');
+            let t = Math.floor(Math.random()*2);
+            r.innerHTML = `<div class="l-cell" onclick="stepL(0,${t},${i},this)">?</div><div class="l-cell" onclick="stepL(1,${t},${i},this)">?</div>`;
+            grid.appendChild(r);
+        }
+        update();
+    }
+
+    function stepL(ch, tr, idx, el) {
+        if(!cur.active || idx !== cur.step) return;
+        if(ch === tr) { 
+            el.innerText = '💥'; el.style.background = '#ef4444'; cur.active = false; 
+            document.getElementById('btn-cashout').style.display = 'none';
+            document.getElementById('g-info').innerText = "УПАЛ!";
+        }
+        else { 
+            el.innerText = '💎'; el.style.background = '#10b981'; 
+            cur.mult *= 2.1; cur.step++; 
+            document.getElementById('g-info').innerText = `Выплата: ${(cur.bet * cur.mult).toFixed(2)}`;
+            document.getElementById('btn-cashout').style.display = 'block'; 
+            if(cur.step < 6) document.querySelectorAll('.ladder-row')[cur.step].classList.remove('locked'); 
+        }
+    }
+
+    function betWheel() {
+        let input = document.getElementById('wb').value;
+        let b = n(input, 0);
+        if(b < 1 || b > 1000000) return alert("Ставка от 1 до 1,000,000!");
+        if(b > db.bal) return alert("Недостаточно TON!");
+        
+        db.bal -= b; 
+        pot = n(pot + b);
+        document.getElementById('w-pot').innerText = `Общий банк: ${pot.toFixed(2)} TON`;
+        document.getElementById('w-players').innerText = "Вы в игре! Ожидание результата...";
+        update();
+    }
+
+    function doCashout() { 
+        if(!cur.active) return; 
+        let win = n(cur.bet * cur.mult);
+        db.bal = n(db.bal + win); 
+        cur.active = false; 
+        alert("Победа! Зачислено: " + win.toFixed(2) + " TON");
+        closeG(); 
+        update(); 
+    }
+
+    // --- ОСТАЛЬНЫЕ ФУНКЦИИ ---
+    function buyM(id, cost, p) { 
+        if(db.bal >= cost){ 
+            db.bal -= cost; 
+            db.pps = n(db.pps + p); 
+            update(); 
+            alert("Успешно куплено!"); 
+        } else {
+            alert("Не хватает TON!");
+        }
+    }
+
+    function claimDaily() { 
+        if(Date.now() - db.daily > 86400000){ 
+            db.bal += 15; 
+            db.daily = Date.now(); 
+            alert("Бонус 15 TON получен!"); 
+        } else {
+            alert("Бонус будет доступен через 24 часа!");
+        }
+    }
+
+    // Запуск цикла
+    setInterval(update, 1000);
+    update();
+</script>
