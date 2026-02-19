@@ -3,203 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON Empire PvP Edition</title>
+    <title>TON Empire: Global Update</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --accent: #0098EA; --bg: #0b0f1a; --glass: rgba(255, 255, 255, 0.07); }
-        body { background: var(--bg); color: #fff; text-align: center; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        :root { --accent: #0098EA; --bg: #0b101b; --glass: rgba(255, 255, 255, 0.08); --success: #10b981; --error: #ef4444; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow: hidden; height: 100vh; user-select: none; }
 
-        /* Шапка с Онлайном */
-        .top-bar { background: rgba(11, 15, 26, 0.8); backdrop-filter: blur(20px); padding: 15px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--glass); }
-        .online-tag { font-size: 10px; background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 5px; }
-        .balance-val { font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--accent); }
+        /* Header */
+        .top-bar { background: rgba(11, 16, 27, 0.9); backdrop-filter: blur(15px); padding: 15px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--glass); z-index: 100; }
+        .online-tag { font-size: 11px; background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 3px 10px; border-radius: 20px; font-weight: bold; }
+        .balance-val { font-size: 24px; font-weight: 800; color: #fff; margin-top: 5px; }
 
-        .tab-content { flex-grow: 1; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 120px; }
-        .active-tab { display: flex; }
+        .tab-content { flex-grow: 1; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; padding-bottom: 100px; transition: 0.3s; }
+        .active-tab { display: flex; animation: fadeIn 0.4s ease; }
 
-        /* Рулетка Анимация */
-        .wheel-container { position: relative; width: 100%; height: 80px; background: #161b2a; border-radius: 15px; overflow: hidden; margin: 20px 0; border: 2px solid var(--glass); }
-        .wheel-line { display: flex; position: absolute; left: 0; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); will-change: transform; }
-        .wheel-item { min-width: 60px; height: 60px; margin: 10px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
-        .wheel-pointer { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #ff4757; transform: translateX(-50%); z-index: 10; box-shadow: 0 0 10px #ff4757; }
+        /* Mines Game UI */
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 20px; width: 100%; max-width: 320px; }
+        .mine-cell { aspect-ratio: 1; background: var(--glass); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
+        .mine-cell.open { background: #1e293b; border-color: var(--accent); }
+        .mine-cell.bomb { background: var(--error); }
 
-        /* Остальное */
-        #coin { width: 190px; height: 190px; background: linear-gradient(135deg, #0098EA, #00f2ff); border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 60px; cursor: pointer; box-shadow: 0 0 40px rgba(0, 152, 234, 0.4); position: relative; }
-        .tap-anim { position: absolute; color: #fff; font-weight: bold; font-size: 26px; pointer-events: none; animation: fly 0.6s forwards; }
-        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
-        
-        .glass-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; width: 100%; margin-bottom: 12px; box-sizing: border-box; }
-        .btn { border: none; padding: 15px; border-radius: 15px; font-weight: 800; color: #fff; cursor: pointer; width: 100%; }
-        .btn-blue { background: var(--accent); }
-        .input-dark { background: #161b2a; border: 1px solid #2d3748; color: #fff; padding: 12px; border-radius: 12px; width: 90%; margin-bottom: 10px; text-align: center; }
-        
-        /* Навигация */
-        .bottom-nav { background: rgba(11, 15, 26, 0.95); display: flex; justify-content: space-around; padding: 12px 0 35px 0; position: fixed; bottom: 0; width: 100%; border-top: 1px solid var(--glass); }
-        .nav-item { color: #64748b; font-size: 11px; cursor: pointer; }
-        .nav-item.active { color: var(--accent); }
+        /* Coin UI */
+        #coin { width: 220px; height: 220px; background: radial-gradient(circle, #00f2ff 0%, #0098EA 100%); border-radius: 50%; margin: 40px auto; display: flex; align-items: center; justify-content: center; font-size: 80px; cursor: pointer; box-shadow: 0 0 50px rgba(0, 152, 234, 0.5); transition: transform 0.1s; position: relative; }
+        #coin:active { transform: scale(0.95); }
+
+        /* Jackpot Wheel */
+        .wheel-container { position: relative; width: 100%; height: 90px; background: #161b2a; border-radius: 20px; overflow: hidden; margin: 20px 0; border: 2px solid var(--glass); }
+        .wheel-line { display: flex; position: absolute; left: 0; transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1); align-items: center; height: 100%; }
+        .wheel-item { min-width: 70px; height: 70px; margin: 0 5px; background: var(--glass); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+        .wheel-pointer { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #ff4757; transform: translateX(-50%); z-index: 10; box-shadow: 0 0 15px #ff4757; }
+
+        /* General UI Elements */
+        .glass-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 18px; width: 100%; margin-bottom: 12px; box-sizing: border-box; text-align: left; }
+        .btn { border: none; padding: 16px; border-radius: 16px; font-weight: 800; color: #fff; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; }
+        .btn-blue { background: linear-gradient(to right, #0098EA, #007bbd); }
+        .btn-gold { background: linear-gradient(to right, #f59e0b, #d97706); }
+        .input-dark { background: #161b2a; border: 1px solid #2d3748; color: #fff; padding: 14px; border-radius: 14px; width: 100%; margin-bottom: 12px; box-sizing: border-box; text-align: center; font-size: 16px; }
+
+        .bottom-nav { background: rgba(11, 16, 27, 0.98); display: flex; justify-content: space-around; padding: 10px 0 30px 0; position: fixed; bottom: 0; width: 100%; border-top: 1px solid var(--glass); }
+        .nav-item { color: #64748b; font-size: 12px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .nav-item.active { color: var(--accent); transform: translateY(-5px); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tap-anim { position: absolute; color: #fff; font-weight: 900; font-size: 28px; pointer-events: none; animation: fly 0.7s ease-out forwards; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        @keyframes fly { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-120px) scale(1.5); } }
     </style>
 </head>
 <body>
     <div class="top-bar">
-        <div style="text-align: left;">
-            <div class="online-tag">● ONLINE: <span id="online-cnt">542</span></div>
-            <div class="balance-val"><span id="balance">0.00</span> <small style="font-size:10px">TON</small></div>
+        <div>
+            <div class="online-tag">● ONLINE: <span id="online-cnt">...</span></div>
+            <div class="balance-val"><span id="balance">0.00</span> <small style="font-size:12px; color:var(--accent)">TON</small></div>
         </div>
-        <div style="text-align: right;"><small style="color:#94a3b8">PPS</small><div style="color:#34d399; font-weight:bold;">+<span id="pps">0</span></div></div>
+        <div style="text-align: right;">
+            <small style="color:#64748b">ЭНЕРГИЯ</small>
+            <div style="color:#fff; font-weight:bold; font-size: 18px;">⚡ <span id="energy">250</span></div>
+        </div>
     </div>
 
     <div id="tab-farm" class="tab-content active-tab">
         <div id="coin">💎</div>
-        <div style="font-size: 28px; font-weight: 900;">⚡ <span id="energy">250</span></div>
-        <div id="energy-timer" style="font-size:12px; color:#94a3b8; margin-top:5px;">Заряжено</div>
+        <div class="glass-card" style="text-align: center;">
+            <div style="color: #94a3b8; font-size: 14px;">Прибыль в секунду (PPS)</div>
+            <div style="font-size: 20px; font-weight: bold; color: var(--success);">+<span id="pps">0.00</span> TON</div>
+        </div>
     </div>
 
     <div id="tab-games" class="tab-content">
         <div id="g-list" style="width:100%">
-            <div class="glass-card" onclick="uiG('mines')">💣 МИНЫ (До 10M TON)</div>
-            <div class="glass-card" onclick="uiG('ladder')">🪜 ЛЕСЕНКА (До 10M TON)</div>
-            <div class="glass-card" onclick="uiG('wheel')" style="border-color:#f59e0b">🎡 PvP ДЖЕКПОТ</div>
+            <div class="glass-card" onclick="uiG('mines')">
+                <div style="font-weight: 800; font-size: 18px;">💣 МИНЫ</div>
+                <div style="font-size: 12px; color:#94a3b8">Умножай TON до x100</div>
+            </div>
+            <div class="glass-card" onclick="uiG('wheel')" style="border-left: 4px solid #f59e0b">
+                <div style="font-weight: 800; font-size: 18px; color:#f59e0b">🎡 PvP ДЖЕКПОТ</div>
+                <div style="font-size: 12px; color:#94a3b8">Играй против других игроков</div>
+            </div>
         </div>
 
         <div id="g-play" style="display:none; width:100%">
-            <h2 id="g-title">ИГРА</h2>
-            <div id="g-area"></div>
-            <div id="g-info" style="margin:10px; color:#f59e0b; font-weight:bold;"></div>
-            <button id="btn-cashout" class="btn btn-blue" style="display:none; background:#f59e0b; margin-bottom:10px;" onclick="doCashout()">ЗАБРАТЬ</button>
-            <button class="btn" style="background:#334155" onclick="closeG()">НАЗАД</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h2 id="g-title" style="margin:0">ИГРА</h2>
+                <button onclick="closeG()" style="background:none; border:none; color:var(--error); font-weight:bold;">ЗАКРЫТЬ</button>
+            </div>
+            <div id="g-area" style="width:100%; display: flex; flex-direction: column; align-items: center; margin-top: 20px;"></div>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchT('farm', this)"><b>⛏</b><br>Клик</div>
-        <div class="nav-item" onclick="switchT('games', this)"><b>🎲</b><br>Игры</div>
+        <div class="nav-item active" onclick="switchT('farm', this)"><b>⛏</b><br>МАЙНИНГ</div>
+        <div class="nav-item" onclick="switchT('games', this)"><b>🎲</b><br>ИГРЫ</div>
     </div>
 
     <script>
-        // --- БАЗА И ЗАЩИТА ОТ NaN ---
-        function n(v, f=0) { let res = parseFloat(v); return isNaN(res) ? f : res; }
+        let db = JSON.parse(localStorage.getItem('ton_v2')) || { bal: 100, nrg: 250, pps: 0.01, last: Date.now() };
+        let game = { type: '', active: false, bet: 0, mines: [], open: 0, bombs: 3, mult: 1 };
+        let jackpot = { pot: 0, myBet: 0, timer: null };
 
-        let db = JSON.parse(localStorage.getItem('ton_pvp_v1')) || { bal: 100, nrg: 250, pps: 0, clk: 0, last: Date.now(), vip: false };
-        let cur = { active: false, bet: 0, mult: 1, type: '' };
-        let wheelPot = 0;
-        let wheelActive = false;
-        let wheelPlayers = [];
-
-        function save() { localStorage.setItem('ton_pvp_v1', JSON.stringify(db)); }
+        function save() { localStorage.setItem('ton_v2', JSON.stringify(db)); }
 
         function update() {
             let now = Date.now();
             let dt = (now - db.last) / 1000;
-            db.bal = n(db.bal + (n(db.pps) * dt));
-            let maxN = db.vip ? 10000 : 250;
-            db.nrg = Math.min(maxN, db.nrg + (dt * 0.2));
+            db.bal = Math.max(0, db.bal + (db.pps * dt));
+            db.nrg = Math.min(250, db.nrg + (dt * 0.3));
             db.last = now;
 
-            document.getElementById('balance').innerText = n(db.bal).toFixed(2);
-            document.getElementById('pps').innerText = n(db.pps).toFixed(2);
-            document.getElementById('energy').innerText = Math.floor(n(db.nrg));
-            document.getElementById('online-cnt').innerText = Math.floor(Math.random() * 50) + 600;
+            document.getElementById('balance').innerText = db.bal.toFixed(2);
+            document.getElementById('energy').innerText = Math.floor(db.nrg);
+            document.getElementById('pps').innerText = db.pps.toFixed(4);
+            document.getElementById('online-cnt').innerText = 700 + Math.floor(Math.random() * 50);
             save();
         }
 
-        // --- ДЖЕКПОТ PvP ---
-        function uiG(t) {
-            document.getElementById('g-list').style.display = 'none';
-            document.getElementById('g-play').style.display = 'block';
-            cur.type = t;
+        // --- МИНЫ ЛОГИКА ---
+        function startM() {
+            let b = parseFloat(document.getElementById('mb').value);
+            let bombCount = parseInt(document.getElementById('m-cnt').value);
+            if(b < 1 || b > db.bal || bombCount < 1 || bombCount > 24) return alert("Ошибка ставки!");
+            
+            db.bal -= b;
+            game.active = true; game.bet = b; game.open = 0; game.bombs = bombCount; game.type = 'mines';
+            game.mines = Array(25).fill(0).map((_, i) => i);
+            game.mines = game.mines.sort(() => Math.random() - 0.5).slice(0, bombCount);
+            
+            renderMinesGrid();
+        }
+
+        function renderMinesGrid() {
             let area = document.getElementById('g-area');
+            area.innerHTML = `
+                <div style="font-size:18px; color:var(--success); font-weight:bold; margin-bottom:10px;">Множитель: x${game.mult.toFixed(2)}</div>
+                <div class="mines-grid" id="m-grid"></div>
+                <button class="btn btn-gold" id="m-cashout" style="margin-top:20px;" onclick="cashoutMines()">ЗАБРАТЬ <span id="m-win">0.00</span> TON</button>
+            `;
+            let grid = document.getElementById('m-grid');
+            for(let i=0; i<25; i++) {
+                let cell = document.createElement('div');
+                cell.className = 'mine-cell';
+                cell.onclick = () => clickMine(i, cell);
+                grid.appendChild(cell);
+            }
+            updateMinesUI();
+        }
+
+        function clickMine(idx, el) {
+            if(!game.active || el.classList.contains('open')) return;
             
-            if(t === 'wheel') {
-                document.getElementById('g-title').innerText = "PvP JACKPOT";
-                area.innerHTML = `
-                    <div class="wheel-container">
-                        <div class="wheel-pointer"></div>
-                        <div id="w-line" class="wheel-line"></div>
-                    </div>
-                    <div id="w-status" style="font-size:14px; color:#34d399">Ждем ставок...</div>
-                    <div id="w-pot-val" style="font-size:24px; margin:10px 0;">Банк: 0 TON</div>
-                    <input type="number" id="wb" class="input-dark" placeholder="Ваша ставка">
-                    <button class="btn btn-blue" onclick="betWheel()">ПОСТАВИТЬ</button>
-                `;
-                renderWheelItems();
-            } else if(t === 'mines') {
-                area.innerHTML = `<input type="number" id="mb" class="input-dark" placeholder="Ставка"><button class="btn btn-blue" onclick="startM()">ИГРАТЬ</button><div id="m-grid" class="mines-grid"></div>`;
+            if(game.mines.includes(idx)) {
+                el.classList.add('bomb'); el.innerText = '💣';
+                game.active = false;
+                setTimeout(() => { alert("БУМ! Вы проиграли."); uiG('mines'); }, 500);
+            } else {
+                el.classList.add('open'); el.innerText = '💎';
+                game.open++;
+                // Формула множителя (упрощенная)
+                game.mult = 1 + (game.open * (game.bombs / 10));
+                updateMinesUI();
             }
         }
 
-        function renderWheelItems() {
-            const line = document.getElementById('w-line');
-            line.innerHTML = '';
-            const icons = ['💎', '💰', '🔥', '👑', '⭐', '🍀'];
-            for(let i=0; i<40; i++) {
-                let div = document.createElement('div');
-                div.className = 'wheel-item';
-                div.innerText = icons[i % icons.length];
-                line.appendChild(div);
-            }
+        function updateMinesUI() {
+            let win = game.bet * game.mult;
+            document.getElementById('m-win').innerText = win.toFixed(2);
         }
 
+        function cashoutMines() {
+            if(!game.active || game.open === 0) return;
+            let win = game.bet * game.mult;
+            db.bal += win;
+            game.active = false;
+            alert(`Вы забрали ${win.toFixed(2)} TON!`);
+            uiG('mines');
+            update();
+        }
+
+        // --- ДЖЕКПОТ ЛОГИКА ---
         function betWheel() {
-            let b = n(document.getElementById('wb').value);
-            if(b < 1 || b > db.bal) return alert("Ошибка ставки!");
+            let b = parseFloat(document.getElementById('wb').value);
+            if(b < 1 || b > db.bal) return alert("Недостаточно средств!");
             
-            db.bal -= b; wheelPot += b;
-            document.getElementById('w-pot-val').innerText = `Банк: ${wheelPot.toFixed(2)} TON`;
-            document.getElementById('w-status').innerText = "Ставка принята! Ждем оппонента...";
+            db.bal -= b;
+            jackpot.myBet = b;
+            jackpot.pot = b;
             
-            // Симуляция входа другого игрока через 3 сек
+            document.getElementById('w-area-inner').innerHTML = `
+                <div style="font-size:16px; color:var(--success)">СТАВКА ПРИНЯТА! Шанс: 100%</div>
+                <div style="font-size:24px; margin:10px 0;">БАНК: ${jackpot.pot.toFixed(2)} TON</div>
+                <div id="w-timer">Ожидание соперника...</div>
+            `;
+            
             setTimeout(() => {
-                if(cur.type !== 'wheel') return;
-                wheelPot += b * 1.2; // «Соперник» поставил столько же + чуть сверху
-                document.getElementById('w-pot-val').innerText = `Банк: ${wheelPot.toFixed(2)} TON`;
-                startCountDown();
+                let enemyBet = b * (Math.random() + 0.5);
+                jackpot.pot += enemyBet;
+                let myChance = (jackpot.myBet / jackpot.pot * 100).toFixed(1);
+                document.getElementById('w-area-inner').innerHTML = `
+                    <div style="font-size:16px; color:var(--accent)">СОПЕРНИК ВОШЕЛ! Шанс: ${myChance}%</div>
+                    <div style="font-size:24px; margin:10px 0;">БАНК: ${jackpot.pot.toFixed(2)} TON</div>
+                    <div id="w-timer">Начало через 5с...</div>
+                `;
+                setTimeout(runWheel, 5000);
             }, 3000);
             update();
         }
 
-        function startCountDown() {
-            let s = 10;
-            let timer = setInterval(() => {
-                if(cur.type !== 'wheel') { clearInterval(timer); return; }
-                document.getElementById('w-status').innerText = `Игра начнется через ${s}с`;
-                s--;
-                if(s < 0) {
-                    clearInterval(timer);
-                    runWheel();
-                }
-            }, 1000);
-        }
-
         function runWheel() {
             const line = document.getElementById('w-line');
-            const shift = Math.floor(Math.random() * 1500) + 1000;
+            const win = Math.random() * 100 < (jackpot.myBet / jackpot.pot * 100);
+            const shift = win ? 1400 : 1800; // Простая симуляция смещения
+            
             line.style.transform = `translateX(-${shift}px)`;
             
             setTimeout(() => {
-                alert("🎉 ВЫ ВЫИГРАЛИ! Приз: " + wheelPot.toFixed(2) + " TON");
-                db.bal += wheelPot;
-                wheelPot = 0;
-                line.style.transition = 'none';
-                line.style.transform = 'translateX(0)';
-                setTimeout(() => line.style.transition = 'transform 4s cubic-bezier(0.15, 0, 0.15, 1)', 50);
-                document.getElementById('w-pot-val').innerText = `Банк: 0 TON`;
-                document.getElementById('w-status').innerText = "Ждем ставок...";
+                if(win) {
+                    alert("ПОБЕДА! Вы выиграли " + jackpot.pot.toFixed(2) + " TON");
+                    db.bal += jackpot.pot;
+                } else {
+                    alert("ПРОИГРЫШ! Повезет в следующий раз.");
+                }
+                uiG('wheel');
                 update();
-            }, 4500);
+            }, 5500);
         }
 
-        // КЛИКЕР
-        document.getElementById('coin').onclick = (e) => {
-            if(db.nrg >= 1) {
-                db.nrg--; db.bal += 0.5;
-                let a = document.createElement('div');
-                a.className = 'tap-anim'; a.innerText = '+0.5';
-                a.style.left = e.clientX + 'px'; a.style.top = e.clientY + 'px';
-                document.body.appendChild(a);
-                setTimeout(() => a.remove(), 600);
-                update();
+        // --- ИНТЕРФЕЙС ---
+        function uiG(t) {
+            document.getElementById('g-list').style.display = 'none';
+            document.getElementById('g-play').style.display = 'block';
+            let area = document.getElementById('g-area');
+            if(t === 'mines') {
+                document.getElementById('g-title').innerText = "МИНЫ";
+                area.innerHTML = `
+                    <input type="number" id="mb" class="input-dark" placeholder="Ставка TON" value="10">
+                    <input type="number" id="m-cnt" class="input-dark" placeholder="Кол-во бомб (1-24)" value="3">
+                    <button class="btn btn-blue" onclick="startM()">ИГРАТЬ</button>
+                `;
+            } else if(t === 'wheel') {
+                document.getElementById('g-title').innerText = "JACKPOT";
+                area.innerHTML = `
+                    <div class="wheel-container"><div class="wheel-pointer"></div><div id="w-line" class="wheel-line"></div></div>
+                    <div id="w-area-inner" style="width:100%; text-align:center;">
+                        <input type="number" id="wb" class="input-dark" placeholder="Ваша ставка TON" value="5">
+                        <button class="btn btn-gold" onclick="betWheel()">ВСТУПИТЬ В БОЙ</button>
+                    </div>
+                `;
+                const line = document.getElementById('w-line');
+                const icons = ['💎', '👑', '💰', '🎲', '🔥'];
+                for(let i=0; i<60; i++) {
+                    let d = document.createElement('div'); d.className='wheel-item'; d.innerText=icons[i%5]; line.appendChild(d);
+                }
             }
-        };
+        }
+
+        function closeG() { 
+            document.getElementById('g-list').style.display = 'block'; 
+            document.getElementById('g-play').style.display = 'none'; 
+            game.active = false;
+        }
 
         function switchT(id, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
@@ -208,7 +268,17 @@
             el.classList.add('active');
         }
 
-        function closeG() { document.getElementById('g-list').style.display = 'block'; document.getElementById('g-play').style.display = 'none'; }
+        document.getElementById('coin').onclick = (e) => {
+            if(db.nrg >= 1) {
+                db.nrg--; db.bal += 0.05;
+                let a = document.createElement('div');
+                a.className = 'tap-anim'; a.innerText = '+0.05';
+                a.style.left = e.clientX + 'px'; a.style.top = e.clientY + 'px';
+                document.body.appendChild(a);
+                setTimeout(() => a.remove(), 700);
+                update();
+            }
+        };
 
         setInterval(update, 1000);
         update();
