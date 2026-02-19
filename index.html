@@ -1,467 +1,143 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TON FINAL ELITE FIXED</title>
-    <style>
-        body { background: #1a1f2e; color: white; font-family: system-ui; padding: 16px; margin: 0; }
-        .card { background: #2a3142; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-        .row { display: flex; justify-content: space-between; margin: 8px 0; }
-        button { background: #4f8ef7; border: none; color: white; padding: 12px 24px; border-radius: 12px; font-size: 16px; width: 100%; margin: 4px 0; cursor: pointer; }
-        input, select { background: #1a1f2e; border: 1px solid #4f8ef7; color: white; padding: 12px; border-radius: 12px; width: 100%; margin: 4px 0; box-sizing: border-box; }
-        .progress { background: #1a1f2e; height: 20px; border-radius: 10px; overflow: hidden; }
-        .progress-fill { background: #4f8ef7; height: 100%; width: 0%; transition: width 0.3s; }
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; }
-        .m-cell { background: #3a4152; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 8px; cursor: pointer; }
-        .m-cell.open-gem { background: #10b981; }
-        .m-cell.open-bomb { background: #ef4444; }
-        .ladder-grid { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
-        .ladder-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .ladder-row.locked { opacity: 0.5; pointer-events: none; }
-        .l-cell { background: #3a4152; padding: 16px; text-align: center; font-size: 24px; border-radius: 8px; cursor: pointer; }
-        .hidden { display: none; }
-        .vip-badge { background: gold; color: black; padding: 4px 8px; border-radius: 20px; font-size: 12px; }
-        #energy-timer { font-size: 12px; color: #8e9ab0; }
-    </style>
-</head>
+    <title>Мое TON Приложение</title>
+    </head>
 <body>
-    <div class="card">
-        <div class="row">
-            <span>💰 TON: <span id="balance">0</span></span>
-            <span>⚡️ <span id="energy">0</span>/<span id="max-energy">250</span></span>
-        </div>
-        <div class="progress">
-            <div class="progress-fill" id="nrg-bar"></div>
-        </div>
-        <div id="energy-timer" class="row">Заряжено на 100%</div>
-        <div class="row">
-            <span>📈 PPS: <span id="pps">0</span></span>
-            <button onclick="claimDaily()" style="width: auto; padding: 8px 16px;">🎁 Daily</button>
-        </div>
-    </div>
 
-    <!-- Улучшения -->
-    <div class="card">
-        <h3>🏪 Магазин</h3>
-        <button onclick="buyM(1, 10, 0.1)">💎 Маленький бонус (10 TON) +0.1 PPS</button>
-        <button onclick="buyM(2, 50, 0.6)">💎 Средний бонус (50 TON) +0.6 PPS</button>
-        <button onclick="buyM(3, 200, 3)">💎 Большой бонус (200 TON) +3 PPS</button>
-        <button onclick="buyVIP()">👑 VIP (500 TON) +10000 энергии</button>
-    </div>
-
-    <!-- Мины -->
-    <div class="card">
-        <h3>💣 МИНЫ</h3>
-        <input type="number" id="mb" placeholder="Ставка" value="10">
-        <select id="mc">
-            <option value="3">3 мины (x2.0)</option>
-            <option value="4">4 мины (x2.5)</option>
-            <option value="5">5 мин (x3.0)</option>
-        </select>
-        <button onclick="startM()">▶️ Начать игру</button>
-        <div id="m-grid" class="grid"></div>
-        <div id="g-info" class="row"></div>
-        <button id="btn-cashout" class="hidden" onclick="doCashout()">💰 Забрать выигрыш</button>
-    </div>
-
-    <!-- Лестница -->
-    <div class="card">
-        <h3>🪜 ЛЕСТНИЦА (x2.1 за шаг)</h3>
-        <input type="number" id="lb" placeholder="Ставка" value="10">
-        <button onclick="startL()">▶️ Начать</button>
-        <div id="l-grid" class="ladder-grid"></div>
-        <div id="l-info" class="row"></div>
-        <button id="l-cashout" class="hidden" onclick="doCashout()">💰 Забрать</button>
-    </div>
-
-    <!-- Колесо -->
-    <div class="card">
-        <h3>🎡 КОЛЕСО (общий банк)</h3>
-        <input type="number" id="wb" placeholder="Ставка" value="10">
-        <button onclick="betWheel()">🎲 Сделать ставку</button>
-        <div id="w-pot" class="row">Общий банк: 0 TON</div>
-        <div id="w-players" class="row">Участников: 0</div>
-    </div>
+    <h1 id="balance">0</h1>
+    <button onclick="startM()">Начать игру</button>
 
     <script>
-        (function() {
-            // Инициализация Telegram
-            let tg = window.Telegram?.WebApp;
-            if (tg) tg.expand();
-            let userId = tg?.initDataUnsafe?.user?.id || 0;
+        // Весь код, который я дал выше, копируй сюда
+        <script>
+    // Инициализация Telegram API
+    let tg = window.Telegram.WebApp;
+    tg.ready(); // Сообщаем Telegram, что приложение готово (убирает серый экран)
+    tg.expand(); // Разворачиваем на весь экран
 
-            // Глобальные переменные
-            let pot = 0; // Исправлено: объявлена переменная
-            let wheelPlayers = 0;
-            
-            // Функция глубокой проверки на число
-            function n(val, fallback = 0) {
-                if (val === null || val === undefined || val === '') return fallback;
-                let num = parseFloat(val);
-                return isNaN(num) || !isFinite(num) ? fallback : num;
-            }
+    let userId = tg.initDataUnsafe?.user?.id || 0;
+    
+    // Улучшенная функция проверки на число
+    function n(val, fallback = 0) {
+        let num = parseFloat(val);
+        return isNaN(num) || !isFinite(num) ? fallback : num;
+    }
 
-            let today = new Date().toLocaleDateString();
-            let saved = (() => {
-                try {
-                    return JSON.parse(localStorage.getItem('ton_final_elite')) || {};
-                } catch {
-                    return {};
+    // Вспомогательная функция для безопасного обновления текста
+    function setText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    }
+
+    let today = new Date().toLocaleDateString();
+    let saved = {};
+    try {
+        saved = JSON.parse(localStorage.getItem('ton_final_elite')) || {};
+    } catch(e) { saved = {}; }
+    
+    let db = {
+        bal: n(saved.bal, 50),
+        nrg: n(saved.nrg, 250),
+        pps: n(saved.pps, 0),
+        clk: n(saved.clk, 0),
+        last: n(saved.last, Date.now()),
+        vip: saved.vip || false,
+        daily: n(saved.daily, 0),
+        q_date: saved.q_date || today,
+        q_list: saved.q_list || [false, false, false, false, false]
+    };
+
+    if(db.q_date !== today) {
+        db.q_list = [false, false, false, false, false];
+        db.q_date = today;
+    }
+
+    let cur = { active: false, bet: 0, mult: 1, type: '', data: null, step: 0 };
+
+    function save() { 
+        db.bal = n(db.bal, 0);
+        localStorage.setItem('ton_final_elite', JSON.stringify(db)); 
+    }
+
+    function update() {
+        let now = Date.now();
+        let dt = Math.max(0, (now - db.last) / 1000);
+        
+        // Начисляем пассивку
+        db.bal = n(db.bal + (n(db.pps) * dt));
+        
+        let maxN = db.vip ? 10000 : 250;
+        let reg = db.vip ? 1.0 : 0.25;
+        
+        if(db.nrg < maxN) {
+            db.nrg = Math.min(maxN, db.nrg + (dt * reg));
+            let remain = (maxN - db.nrg) / reg;
+            let m = Math.floor(remain / 60);
+            let s = Math.floor(remain % 60);
+            setText('energy-timer', `Фулл энергия через: ${m}:${s < 10 ? '0'+s : s}`);
+        } else {
+            setText('energy-timer', "Заряжено на 100%");
+        }
+
+        db.last = now;
+        
+        // Обновление UI с проверкой на существование элементов
+        setText('balance', n(db.bal).toFixed(2));
+        setText('pps', n(db.pps).toFixed(2));
+        setText('energy', Math.floor(n(db.nrg)));
+        
+        const nrgBar = document.getElementById('nrg-bar');
+        if (nrgBar) nrgBar.style.width = (n(db.nrg)/maxN*100)+'%';
+        
+        // Если у тебя есть функция renderQuests, вызывай её через проверку
+        if (typeof renderQuests === "function") renderQuests();
+        save();
+    }
+
+    // Игры (обновленные функции с защитой)
+    function startM() {
+        let input = document.getElementById('mb')?.value;
+        let b = n(input, 0);
+        let c = parseInt(document.getElementById('mc')?.value || 3);
+
+        if (b <= 0) return alert("Введите корректную ставку!");
+        if (b > db.bal) return alert("Недостаточно баланса!");
+
+        db.bal -= b;
+        cur = { active: true, bet: b, mult: 1, type: 'mines', data: Array(25).fill(false) };
+        let p=0; while(p<c){let r=Math.floor(Math.random()*25); if(!cur.data[r]){cur.data[r]=true; p++;}}
+        
+        let grid = document.getElementById('m-grid'); 
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        for(let i=0; i<25; i++) {
+            let d = document.createElement('div'); 
+            d.className = 'm-cell'; d.innerText = '?';
+            d.onclick = () => {
+                if(!cur.active || d.innerText !== '?') return;
+                if(cur.data[i]) { 
+                    d.innerText = '💣'; d.classList.add('open-bomb'); cur.active = false; 
+                    if(document.getElementById('btn-cashout')) document.getElementById('btn-cashout').style.display = 'none';
+                    setText('g-info', "ВЗРЫВ! Потеряно: " + cur.bet.toFixed(2));
                 }
-            })();
-            
-            // Инициализация с защитой от пустых данных
-            let db = {
-                bal: n(saved.bal, 50),
-                nrg: n(saved.nrg, 250),
-                pps: n(saved.pps, 0),
-                clk: n(saved.clk, 0),
-                last: n(saved.last, Date.now()),
-                vip: saved.vip || false,
-                daily: n(saved.daily, 0),
-                q_date: saved.q_date || today,
-                q_list: saved.q_list || [false, false, false, false, false]
-            };
-
-            // Сброс квестов на новый день
-            if(db.q_date !== today) {
-                db.q_list = [false, false, false, false, false];
-                db.q_date = today;
-            }
-
-            // Текущая игра
-            let cur = { active: false, bet: 0, mult: 1, type: '', data: null, step: 0 };
-            
-            // Функция сохранения
-            function save() { 
-                try {
-                    db.bal = n(db.bal, 0);
-                    db.nrg = Math.min(db.vip ? 10000 : 250, Math.max(0, n(db.nrg)));
-                    localStorage.setItem('ton_final_elite', JSON.stringify(db)); 
-                } catch (e) {
-                    console.error('Save error:', e);
+                else { 
+                    d.innerText = '💎'; d.classList.add('open-gem'); 
+                    cur.mult += (c/4)+0.3; 
+                    setText('g-info', `Куш: ${(cur.bet*cur.mult).toFixed(2)} TON`); 
+                    if(document.getElementById('btn-cashout')) document.getElementById('btn-cashout').style.display = 'block'; 
                 }
-            }
+            }; grid.appendChild(d);
+        }
+        update();
+    }
 
-            // Функция рендера квестов (исправлено)
-            function renderQuests() {
-                // Заглушка для квестов, можно расширить
-                console.log('Quests updated:', db.q_list);
-            }
-
-            // Функция закрытия игры (исправлено)
-            function closeG() {
-                cur.active = false;
-                // Очищаем игровые сетки
-                document.getElementById('m-grid').innerHTML = '';
-                document.getElementById('l-grid').innerHTML = '';
-                document.getElementById('btn-cashout')?.classList.add('hidden');
-                document.getElementById('l-cashout')?.classList.add('hidden');
-                document.getElementById('g-info').innerText = '';
-                document.getElementById('l-info').innerText = '';
-            }
-
-            // Основной апдейт
-            function update() {
-                try {
-                    let now = Date.now();
-                    let dt = Math.max(0, (now - db.last) / 1000);
-                    
-                    // Начисляем пассивку (не больше 100 за раз)
-                    let passiveGain = Math.min(100, n(db.pps) * dt);
-                    db.bal = n(db.bal + passiveGain);
-                    
-                    let maxN = db.vip ? 10000 : 250;
-                    let reg = db.vip ? 1.0 : 0.25;
-                    
-                    if(db.nrg < maxN) {
-                        db.nrg = Math.min(maxN, db.nrg + (dt * reg));
-                        let remain = (maxN - db.nrg) / reg;
-                        if(remain > 0 && isFinite(remain)) {
-                            let m = Math.floor(remain / 60);
-                            let s = Math.floor(remain % 60);
-                            document.getElementById('energy-timer').innerText = `Фулл энергия через: ${m}:${s < 10 ? '0'+s : s}`;
-                        }
-                    } else {
-                        document.getElementById('energy-timer').innerText = "⚡ Заряжено на 100%";
-                    }
-
-                    db.last = now;
-                    
-                    // Обновление UI
-                    document.getElementById('balance').innerText = n(db.bal).toFixed(2);
-                    document.getElementById('pps').innerText = n(db.pps).toFixed(2);
-                    document.getElementById('energy').innerText = Math.floor(n(db.nrg));
-                    document.getElementById('max-energy').innerText = maxN;
-                    document.getElementById('nrg-bar').style.width = (n(db.nrg)/maxN*100)+'%';
-                    
-                    renderQuests();
-                    save();
-                } catch (e) {
-                    console.error('Update error:', e);
-                }
-            }
-
-            // --- ИГРЫ ---
-            function startM() {
-                try {
-                    let input = document.getElementById('mb').value;
-                    let b = n(input, 0);
-                    let c = parseInt(document.getElementById('mc').value) || 3;
-
-                    if (b <= 0) return alert("❌ Введите корректную ставку!");
-                    if (b > db.bal) return alert("❌ Недостаточно баланса!");
-                    if (b > 10000000) return alert("❌ Макс. ставка 10,000,000!");
-
-                    db.bal -= b;
-                    cur = { active: true, bet: b, mult: 1, type: 'mines', data: Array(25).fill(false), step: 0 };
-                    
-                    // Расставляем мины
-                    let p = 0;
-                    while(p < c) {
-                        let r = Math.floor(Math.random() * 25);
-                        if(!cur.data[r]) {
-                            cur.data[r] = true;
-                            p++;
-                        }
-                    }
-                    
-                    let grid = document.getElementById('m-grid');
-                    grid.innerHTML = '';
-                    for(let i = 0; i < 25; i++) {
-                        let d = document.createElement('div');
-                        d.className = 'm-cell';
-                        d.innerText = '?';
-                        d.onclick = (idx => () => {
-                            if(!cur.active || d.innerText !== '?') return;
-                            if(cur.data[idx]) { 
-                                d.innerText = '💣';
-                                d.classList.add('open-bomb');
-                                cur.active = false;
-                                document.getElementById('btn-cashout').classList.add('hidden');
-                                document.getElementById('g-info').innerText = "💥 ВЗРЫВ! Потеряно: " + cur.bet.toFixed(2);
-                                // Блокируем все ячейки
-                                document.querySelectorAll('.m-cell').forEach(cell => cell.style.pointerEvents = 'none');
-                            } else { 
-                                d.innerText = '💎';
-                                d.classList.add('open-gem');
-                                cur.mult += (c/4) + 0.3;
-                                let win = cur.bet * cur.mult;
-                                document.getElementById('g-info').innerText = `💎 Куш: ${win.toFixed(2)} TON`;
-                                document.getElementById('btn-cashout').classList.remove('hidden');
-                            }
-                        })(i);
-                        grid.appendChild(d);
-                    }
-                    update();
-                } catch (e) {
-                    console.error('Mines error:', e);
-                    alert('Ошибка запуска игры');
-                }
-            }
-
-            function startL() {
-                try {
-                    let input = document.getElementById('lb').value;
-                    let b = n(input, 0);
-
-                    if (b <= 0) return alert("❌ Введите ставку!");
-                    if (b > db.bal) return alert("❌ Мало TON!");
-                    if (b > 10000000) return alert("❌ Макс. ставка 10,000,000!");
-
-                    db.bal -= b;
-                    cur = { active: true, bet: b, mult: 1, type: 'ladder', step: 0 };
-                    
-                    let grid = document.getElementById('l-grid');
-                    grid.innerHTML = '';
-                    for(let i = 0; i < 6; i++) {
-                        let r = document.createElement('div');
-                        r.className = 'ladder-row' + (i > 0 ? ' locked' : '');
-                        let t = Math.floor(Math.random() * 2); // 0 или 1
-                        r.innerHTML = `<div class="l-cell" data-row="${i}" data-choice="0">?</div><div class="l-cell" data-row="${i}" data-choice="1">?</div>`;
-                        
-                        // Добавляем обработчики
-                        let cells = r.children;
-                        for(let j = 0; j < cells.length; j++) {
-                            cells[j].onclick = (function(row, choice, target) {
-                                return function() {
-                                    stepL(choice, t, row, target);
-                                };
-                            })(i, j, cells[j]);
-                        }
-                        grid.appendChild(r);
-                    }
-                    update();
-                } catch (e) {
-                    console.error('Ladder error:', e);
-                    alert('Ошибка запуска игры');
-                }
-            }
-
-            function stepL(ch, tr, idx, el) {
-                try {
-                    if(!cur.active || idx !== cur.step) return;
-                    
-                    if(ch === tr) { 
-                        el.innerText = '💥';
-                        el.style.background = '#ef4444';
-                        cur.active = false;
-                        document.getElementById('l-cashout').classList.add('hidden');
-                        document.getElementById('l-info').innerText = "💥 УПАЛ! Потеряно: " + cur.bet.toFixed(2);
-                        // Блокируем все
-                        document.querySelectorAll('.l-cell').forEach(cell => cell.style.pointerEvents = 'none');
-                    } else { 
-                        el.innerText = '💎';
-                        el.style.background = '#10b981';
-                        cur.mult *= 2.1;
-                        cur.step++;
-                        let win = cur.bet * cur.mult;
-                        document.getElementById('l-info').innerText = `💎 Выплата: ${win.toFixed(2)} TON`;
-                        document.getElementById('l-cashout').classList.remove('hidden');
-                        
-                        if(cur.step < 6) {
-                            document.querySelectorAll('.ladder-row')[cur.step].classList.remove('locked');
-                        } else {
-                            // Победа на всех уровнях
-                            document.getElementById('l-info').innerText = `🏆 МАКСИМУМ! ${win.toFixed(2)} TON`;
-                        }
-                    }
-                } catch (e) {
-                    console.error('Step error:', e);
-                }
-            }
-
-            function betWheel() {
-                try {
-                    let input = document.getElementById('wb').value;
-                    let b = n(input, 0);
-                    if(b < 1 || b > 1000000) return alert("❌ Ставка от 1 до 1,000,000!");
-                    if(b > db.bal) return alert("❌ Недостаточно TON!");
-                    
-                    db.bal -= b;
-                    pot = n(pot + b); // Исправлено: pot объявлена
-                    wheelPlayers++;
-                    
-                    document.getElementById('w-pot').innerText = `🎯 Общий банк: ${pot.toFixed(2)} TON`;
-                    document.getElementById('w-players').innerText = `👥 Участников: ${wheelPlayers}`;
-                    
-                    // С вероятностью 10% запускаем колесо (для демо)
-                    if(Math.random() < 0.1) {
-                        setTimeout(() => {
-                            if(wheelPlayers > 0) {
-                                let winner = Math.random() < 0.3; // 30% шанс выигрыша
-                                if(winner) {
-                                    db.bal += pot;
-                                    alert(`🎉 ВЫ ВЫИГРАЛИ КОЛЕСО! +${pot.toFixed(2)} TON`);
-                                } else {
-                                    alert(`😢 Вы не выиграли. Банк: ${pot.toFixed(2)} TON уходит дальше`);
-                                }
-                                pot = 0;
-                                wheelPlayers = 0;
-                                document.getElementById('w-pot').innerText = '🎯 Общий банк: 0 TON';
-                                document.getElementById('w-players').innerText = '👥 Участников: 0';
-                                update();
-                            }
-                        }, 3000);
-                    }
-                    update();
-                } catch (e) {
-                    console.error('Wheel error:', e);
-                }
-            }
-
-            function doCashout() {
-                try {
-                    if(!cur.active) return;
-                    
-                    let win = n(cur.bet * cur.mult);
-                    db.bal = n(db.bal + win);
-                    cur.active = false;
-                    alert("🎉 Победа! Зачислено: " + win.toFixed(2) + " TON");
-                    closeG(); // Исправлено: функция определена
-                    update();
-                } catch (e) {
-                    console.error('Cashout error:', e);
-                }
-            }
-
-            // Магазин
-            function buyM(id, cost, p) {
-                try {
-                    if(db.bal >= cost) { 
-                        db.bal -= cost; 
-                        db.pps = n(db.pps + p); 
-                        update(); 
-                        alert("✅ Успешно куплено! +" + p + " PPS"); 
-                    } else {
-                        alert("❌ Не хватает TON! Нужно: " + cost);
-                    }
-                } catch (e) {
-                    console.error('Buy error:', e);
-                }
-            }
-
-            function buyVIP() {
-                try {
-                    if(db.bal >= 500) {
-                        db.bal -= 500;
-                        db.vip = true;
-                        db.nrg = Math.min(10000, db.nrg);
-                        update();
-                        alert("👑 VIP активирован! +10000 энергии");
-                    } else {
-                        alert("❌ Нужно 500 TON для VIP");
-                    }
-                } catch (e) {
-                    console.error('VIP error:', e);
-                }
-            }
-
-            function claimDaily() {
-                try {
-                    if(Date.now() - db.daily > 86400000) { 
-                        db.bal += 15; 
-                        db.daily = Date.now(); 
-                        alert("🎁 Бонус 15 TON получен!"); 
-                        update();
-                    } else {
-                        let remain = 86400000 - (Date.now() - db.daily);
-                        let hours = Math.floor(remain / 3600000);
-                        let mins = Math.floor((remain % 3600000) / 60000);
-                        alert(`⏰ Бонус через ${hours}ч ${mins}м`);
-                    }
-                } catch (e) {
-                    console.error('Daily error:', e);
-                }
-            }
-
-            // Инициализация и старт
-            window.n = n;
-            window.startM = startM;
-            window.startL = startL;
-            window.stepL = stepL;
-            window.betWheel = betWheel;
-            window.doCashout = doCashout;
-            window.buyM = buyM;
-            window.buyVIP = buyVIP;
-            window.claimDaily = claimDaily;
-            window.closeG = closeG;
-
-            // Запуск цикла
-            setInterval(update, 1000);
-            update();
-
-            // Добавляем кликер на баланс
-            document.getElementById('balance').addEventListener('dblclick', function() {
-                if(db.nrg >= 1) {
-                    db.nrg -= 1;
-                    db.bal += 0.01;
-                    db.clk++;
-                    update();
-                }
-            });
-        })();
+    // Запуск цикла
+    setInterval(update, 1000);
+    update();
+</script>
+        console.log("Скрипт запущен!");
     </script>
 </body>
 </html>
