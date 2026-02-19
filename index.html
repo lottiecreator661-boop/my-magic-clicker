@@ -3,60 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magic Clicker</title>
+    <title>Magic Clicker V2</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            background-color: #1a1a1a;
-            color: white;
-            text-align: center;
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            overflow: hidden; /* Чтобы экран не дергался */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            background-color: #1a1a1a; color: white;
+            text-align: center; font-family: 'Arial', sans-serif;
+            margin: 0; overflow: hidden; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; position: relative;
         }
-        .score { font-size: 32px; margin-bottom: 20px; font-weight: bold; color: #f39c12; }
+        .header { position: absolute; top: 20px; width: 100%; text-align: center; }
+        .level { font-size: 18px; color: #3498db; font-weight: bold; margin-bottom: 5px; }
+        .score { font-size: 36px; font-weight: bold; color: #f1c40f; }
+        
         #coin {
             width: 200px; height: 200px;
-            background: radial-gradient(circle, #f1c40f, #f39c12);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 80px;
-            cursor: pointer;
-            box-shadow: 0 0 30px rgba(243, 156, 18, 0.6);
-            transition: transform 0.05s;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            background: radial-gradient(circle, #f1c40f, #e67e22);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 80px; cursor: pointer; margin-top: 30px;
+            box-shadow: 0 0 40px rgba(243, 156, 18, 0.6);
+            transition: transform 0.05s; user-select: none;
+            -webkit-tap-highlight-color: transparent; margin-bottom: 30px;
         }
         #coin:active { transform: scale(0.92); }
+        
+        .footer { position: absolute; bottom: 30px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .energy { font-size: 22px; color: #2ecc71; margin-bottom: 15px; font-weight: bold; }
+        
+        .shop-btn {
+            background: #9b59b6; color: white; border: none;
+            padding: 12px 30px; font-size: 18px; border-radius: 20px;
+            cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(155, 89, 182, 0.4);
+        }
+        
+        /* Окно Магазина */
+        #shop {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
+        }
+        .shop-title { font-size: 28px; color: #f1c40f; margin-bottom: 20px; font-weight: bold; }
+        .buy-btn {
+            background: #34495e; color: white; border: 2px solid #f1c40f;
+            padding: 15px; width: 80%; font-size: 18px; border-radius: 10px;
+            margin-bottom: 15px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .buy-btn:active { background: #f1c40f; color: black; }
+        .close-shop { background: #e74c3c; border-color: #c0392b; margin-top: 20px; }
+        #shop-msg { margin-top: 15px; font-size: 18px; color: #e74c3c; font-weight: bold; text-align: center; padding: 0 20px; min-height: 50px;}
     </style>
 </head>
 <body>
-    <div class="score">💰 <span id="balance">0</span></div>
+    <div class="header">
+        <div class="level" id="level-text">Уровень: 1 (0/15000)</div>
+        <div class="score">💰 <span id="balance">0</span></div>
+    </div>
+    
     <div id="coin">⚡️</div>
+    
+    <div class="footer">
+        <div class="energy">Энергия: <span id="energy-text">1000/1000</span></div>
+        <button class="shop-btn" onclick="openShop()">🛒 Магазин энергии</button>
+    </div>
+
+    <div id="shop">
+        <div class="shop-title">Тайная Лавка</div>
+        <button class="buy-btn" onclick="buyEnergy(1000)">🔋 Купить 1 000 ⚡️</button>
+        <button class="buy-btn" onclick="buyEnergy(10000)">🔋 Купить 10 000 ⚡️</button>
+        <button class="buy-btn" onclick="buyEnergy(100000)">🔋 Купить 100 000 ⚡️</button>
+        <div id="shop-msg"></div>
+        <button class="buy-btn close-shop" onclick="closeShop()">❌ Закрыть лавку</button>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand(); 
 
+        // Переменные БД
         let balance = 0;
-        const balanceEl = document.getElementById('balance');
-        const coin = document.getElementById('coin');
+        let clicksTotal = 0;
+        let currentEnergy = 1000;
+        let lastSaveTime = Date.now();
 
-        coin.addEventListener('click', () => {
-            balance++;
-            balanceEl.innerText = balance;
+        // Элементы на экране
+        const balanceEl = document.getElementById('balance');
+        const levelEl = document.getElementById('level-text');
+        const energyEl = document.getElementById('energy-text');
+        const coin = document.getElementById('coin');
+        const shopDiv = document.getElementById('shop');
+        const shopMsg = document.getElementById('shop-msg');
+
+        // 1. ЗАГРУЗКА БАЗЫ ДАННЫХ
+        function loadData() {
+            let saved = localStorage.getItem('magic_clicker_db');
+            if (saved) {
+                let data = JSON.parse(saved);
+                balance = data.balance || 0;
+                clicksTotal = data.clicksTotal || 0;
+                currentEnergy = data.energy !== undefined ? data.energy : 1000;
+                lastSaveTime = data.lastSaveTime || Date.now();
+            }
+        }
+
+        // 2. ВЫЧИСЛЕНИЕ УРОВНЯ И ЛИМИТОВ
+        function getLevel() {
+            let lvl = Math.floor(clicksTotal / 15000) + 1;
+            return lvl > 100 ? 100 : lvl;
+        }
+
+        function getMaxEnergy(lvl) {
+            if (lvl < 10) return 1000; // До 10 лвл = 1000
+            let tens = Math.floor(lvl / 10); // 10 лвл = 1, 20 лвл = 2
+            return tens * 10000; // 10 лвл = 10000, 20 лвл = 20000
+        }
+
+        // 3. ВОССТАНОВЛЕНИЕ ЭНЕРГИИ ЗА ВРЕМЯ ОТСУТСТВИЯ
+        function regenOfflineEnergy() {
+            let now = Date.now();
+            let hoursPassed = (now - lastSaveTime) / (1000 * 60 * 60);
+            let energyToAdd = hoursPassed * 1000; // +1000 в час
             
-            // Вибрация при клике
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
+            let maxE = getMaxEnergy(getLevel());
+            currentEnergy += energyToAdd;
+            if (currentEnergy > maxE) currentEnergy = maxE;
+            lastSaveTime = now;
+        }
+
+        // 4. СОХРАНЕНИЕ В БАЗУ ДАННЫХ
+        function saveData() {
+            let data = {
+                balance: balance,
+                clicksTotal: clicksTotal,
+                energy: currentEnergy,
+                lastSaveTime: Date.now()
+            };
+            localStorage.setItem('magic_clicker_db', JSON.stringify(data));
+        }
+
+        // 5. ОБНОВЛЕНИЕ ЭКРАНА
+        function updateUI() {
+            balanceEl.innerText = balance.toLocaleString(); // Цифры с пробелами (1 000 000)
+            
+            let lvl = getLevel();
+            let maxE = getMaxEnergy(lvl);
+            let nextLvlClicks = lvl * 15000;
+            
+            if (lvl === 100) {
+                levelEl.innerText = `Уровень: 100 (MAX)`;
+                levelEl.style.color = '#e74c3c'; // Красный цвет на макс лвл
+            } else {
+                levelEl.innerText = `Уровень: ${lvl} (${clicksTotal}/${nextLvlClicks})`;
+            }
+            
+            energyEl.innerText = `${Math.floor(currentEnergy)} / ${maxE}`;
+        }
+
+        // Запускаем игру
+        loadData();
+        regenOfflineEnergy();
+        updateUI();
+
+        // 6. КЛИК ПО МОНЕТЕ
+        coin.addEventListener('click', () => {
+            if (currentEnergy >= 1) {
+                currentEnergy -= 1;
+                clicksTotal += 1;
+                
+                let lvl = getLevel();
+                // На 100 уровне даем 1 000 000, иначе 1 монету
+                let clickPower = (lvl >= 100) ? 1000000 : 1;
+                balance += clickPower;
+                
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+                
+                updateUI();
+            } else {
+                // Если нет энергии - мигаем красным
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                energyEl.style.color = '#e74c3c'; 
+                setTimeout(() => energyEl.style.color = '#2ecc71', 300);
             }
         });
+
+        // 7. ОНЛАЙН-РЕГЕНЕРАЦИЯ И АВТОСОХРАНЕНИЕ
+        // +1000 в час = примерно 0.27 энергии в секунду
+        setInterval(() => {
+            let maxE = getMaxEnergy(getLevel());
+            if (currentEnergy < maxE) {
+                currentEnergy += (1000 / 3600); // Добавляем долю секунды
+                if (currentEnergy > maxE) currentEnergy = maxE;
+                updateUI();
+            }
+        }, 1000);
+        
+        // Автосохранение каждые 3 секунды
+        setInterval(saveData, 3000);
+
+        // 8. ЛОГИКА МАГАЗИНА
+        function openShop() {
+            shopDiv.style.display = 'flex';
+            shopMsg.innerText = '';
+        }
+        function closeShop() {
+            shopDiv.style.display = 'none';
+        }
+        function buyEnergy(amount) {
+            shopMsg.innerText = `Для покупки энергии напишите @fresei`;
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+        }
     </script>
 </body>
 </html>
-
