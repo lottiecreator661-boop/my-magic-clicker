@@ -3,357 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON Empire</title>
+    <title>TON Empire Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* БАЗОВЫЕ СТИЛИ И КРАСИВЫЙ ФОН */
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: #ffffff; text-align: center; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; overflow: hidden; display: flex; flex-direction: column;
-            height: 100vh; position: relative; user-select: none;
+            background: radial-gradient(circle at center, #1e1b4b, #0f172a);
+            color: #ffffff; text-align: center; font-family: 'Segoe UI', sans-serif;
+            margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh;
         }
 
-        /* ВЕРХНЯЯ ПАНЕЛЬ БАЛАНСА */
-        .top-bar {
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
-            padding: 15px 20px; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);
-            z-index: 10;
-        }
-        .balance-box { display: flex; flex-direction: column; align-items: flex-start; }
-        .balance-title { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .balance-amount { font-size: 24px; font-weight: bold; color: #0098EA; display: flex; align-items: center; gap: 5px; }
+        /* UI ЭЛЕМЕНТЫ */
+        .top-bar { background: rgba(0,0,0,0.4); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        .balance { font-size: 22px; font-weight: bold; color: #0098EA; }
         
-        .topup-btn {
-            background: #0098EA; color: white; border: none; padding: 8px 15px;
-            border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 152, 234, 0.4);
-        }
-        .topup-btn:active { transform: scale(0.95); }
-
-        /* КОНТЕЙНЕР ДЛЯ ВКЛАДОК */
-        .tab-content { flex-grow: 1; display: none; flex-direction: column; align-items: center; justify-content: center; position: relative; width: 100%; }
+        .tab-content { flex-grow: 1; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
         .active-tab { display: flex; }
 
         /* КЛИКЕР */
-        .level-info { font-size: 16px; color: #a78bfa; margin-bottom: 30px; background: rgba(167, 139, 250, 0.1); padding: 5px 15px; border-radius: 20px; }
-        
-        /* КРАСИВАЯ КНОПКА TON */
         #coin {
-            width: 220px; height: 220px; background: radial-gradient(circle at 30% 30%, #38bdf8, #0098EA, #0284c7);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 0 50px rgba(0, 152, 234, 0.5), inset 0 0 20px rgba(255,255,255,0.3);
-            transition: transform 0.05s; border: 4px solid rgba(255,255,255,0.1); margin-bottom: 40px;
+            width: 200px; height: 200px; background: #0098EA; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin: 40px 0;
+            box-shadow: 0 0 40px rgba(0,152,234,0.5); transition: 0.05s;
         }
-        #coin:active { transform: scale(0.92); box-shadow: 0 0 30px rgba(0, 152, 234, 0.8); }
-        .ton-logo { width: 100px; height: 100px; fill: white; }
+        #coin:active { transform: scale(0.95); }
 
-        .energy-box { margin-top: 20px; font-size: 18px; color: #34d399; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        /* ОБЩИЕ СТИЛИ ИГР */
+        .game-container { width: 100%; display: none; flex-direction: column; align-items: center; }
+        .game-active { display: flex; }
+        .btn { border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; margin: 5px; }
+        .btn-blue { background: #0098EA; }
+        .btn-orange { background: #f59e0b; }
+        .btn-red { background: #ef4444; }
+        .game-input { background: #1e293b; border: 1px solid #475569; color: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; width: 80%; text-align: center; }
 
-        /* МЕНЮ ИГР */
-        .games-list { width: 90%; max-height: 70vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
-        .game-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .game-info { text-align: left; }
-        .game-name { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 5px; }
-        .game-desc { font-size: 12px; color: #94a3b8; }
-        .play-btn { background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        /* МИНЫ */
+        .grid-5x5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 15px 0; width: 90%; }
+        .cell { aspect-ratio: 1; background: #334155; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
-        /* МАГАЗИН ЭНЕРГИИ */
-        .shop-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; width: 90%; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* НИЖНЕЕ МЕНЮ */
-        .bottom-nav { background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; padding: 15px 0; z-index: 10; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 12px; cursor: pointer; gap: 5px; transition: 0.2s; width: 33%; }
+        /* ЛЕСЕНКА */
+        .ladder-grid { display: flex; flex-direction: column-reverse; gap: 5px; width: 80%; }
+        .ladder-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .ladder-cell { padding: 15px; background: #334155; border-radius: 10px; }
+
+        /* БЛЭКДЖЕК */
+        .bj-area { background: rgba(16, 185, 129, 0.1); border-radius: 15px; padding: 15px; width: 90%; margin: 10px 0; }
+        .cards { font-size: 24px; letter-spacing: 5px; margin: 10px 0; }
+
+        /* NAV */
+        .bottom-nav { background: #0f172a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #334155; }
+        .nav-item { color: #94a3b8; font-size: 12px; cursor: pointer; }
         .nav-item.active { color: #0098EA; }
-        .nav-icon { font-size: 24px; }
-
-        /* МОДАЛЬНЫЕ ОКНА */
-        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; justify-content: center; align-items: center; }
-        .modal-box { background: #1e293b; border: 1px solid #334155; padding: 25px; border-radius: 20px; width: 80%; text-align: center; }
-        .modal-title { font-size: 22px; color: white; margin-bottom: 15px; font-weight: bold; }
-        .modal-input { width: 90%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 18px; text-align: center; }
-        .modal-btn { background: #10b981; color: white; border: none; padding: 12px 0; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
-        .modal-close { background: #ef4444; }
-        .modal-msg { margin-top: 15px; font-size: 16px; font-weight: bold; min-height: 24px; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <div class="balance-box">
-            <span class="balance-title">Твой Баланс</span>
-            <span class="balance-amount">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0098EA" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4-4-4 4-4z"/></svg>
-                <span id="balance">0</span> TON
-            </span>
-        </div>
-        <button class="topup-btn" onclick="openContactModal('Пополнение')">Пополнить</button>
+        <div class="balance">💎 <span id="balance">0</span> TON</div>
+        <button class="btn btn-blue" onclick="alert('Пиши @fresei')">Пополнить</button>
     </div>
 
     <div id="tab-clicker" class="tab-content active-tab">
-        <div class="level-info" id="level-text">🏆 Уровень: 1 (0 / 15000)</div>
-        
-        <div id="coin">
-            <svg class="ton-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 12l10 10 10-10L12 2zm0 4.5l5.5 5.5-5.5 5.5-5.5-5.5L12 6.5z"/>
-            </svg>
-        </div>
-        
-        <div class="energy-box">⚡ Энергия: <span id="energy-text">1000/1000</span></div>
+        <div id="coin">💎</div>
+        <div style="color:#34d399; font-weight:bold;">⚡ Энергия: <span id="energy">1000</span></div>
     </div>
 
     <div id="tab-games" class="tab-content">
-        <h2 style="color: white; margin-bottom: 20px;">Казино Empire</h2>
-        <div class="games-list">
-            <div class="game-card">
-                <div class="game-info">
-                    <div class="game-name">💣 Мины</div>
-                    <div class="game-desc">Шанс: 70% | Куш: x1.5</div>
-                </div>
-                <button class="play-btn" onclick="openGameModal('Мины', 1.5, 0.7)">Играть</button>
-            </div>
-            <div class="game-card">
-                <div class="game-info">
-                    <div class="game-name">📈 Лесенка</div>
-                    <div class="game-desc">Шанс: 50% | Куш: x2.0</div>
-                </div>
-                <button class="play-btn" onclick="openGameModal('Лесенка', 2.0, 0.5)">Играть</button>
-            </div>
-            <div class="game-card">
-                <div class="game-info">
-                    <div class="game-name">🃏 Блэкджек</div>
-                    <div class="game-desc">Шанс: 30% | Куш: x3.0</div>
-                </div>
-                <button class="play-btn" onclick="openGameModal('Блэкджек', 3.0, 0.3)">Играть</button>
-            </div>
+        <div id="games-menu" style="display: flex; flex-direction: column; width: 90%;">
+            <button class="btn btn-blue" onclick="showGame('mines')">💣 МИНЫ (5х5)</button>
+            <button class="btn btn-orange" onclick="showGame('ladder')">🪜 ЛЕСЕНКА</button>
+            <button class="btn btn-red" onclick="showGame('bj')">🃏 БЛЭКДЖЕК</button>
         </div>
-    </div>
 
-    <div id="tab-shop" class="tab-content">
-        <h2 style="color: white; margin-bottom: 20px;">Энергетики</h2>
-        <div class="games-list">
-            <div class="shop-card">
-                <div class="game-info">
-                    <div class="game-name">🔋 Малая колба</div>
-                    <div class="game-desc">+1 000 Энергии</div>
-                </div>
-                <button class="topup-btn" onclick="openContactModal('Энергия')">Купить</button>
+        <div id="game-mines" class="game-container">
+            <h3 id="m-status">МИНЫ</h3>
+            <input type="number" id="m-bet" class="game-input" placeholder="Ставка">
+            <button class="btn btn-blue" onclick="startMines()">ИГРАТЬ</button>
+            <div id="m-grid" class="grid-5x5"></div>
+            <button id="m-cashout" class="btn btn-orange" style="display:none" onclick="cashoutMines()">ЗАБРАТЬ</button>
+            <button class="btn btn-red" onclick="exitGames()">ВЫЙТИ</button>
+        </div>
+
+        <div id="game-ladder" class="game-container">
+            <h3 id="l-status">ЛЕСЕНКА</h3>
+            <input type="number" id="l-bet" class="game-input" placeholder="Ставка">
+            <button class="btn btn-blue" onclick="startLadder()">ИГРАТЬ</button>
+            <div id="l-grid" class="ladder-grid"></div>
+            <button id="l-cashout" class="btn btn-orange" style="display:none" onclick="cashoutLadder()">ЗАБРАТЬ</button>
+            <button class="btn btn-red" onclick="exitGames()">ВЫЙТИ</button>
+        </div>
+
+        <div id="game-bj" class="game-container">
+            <h3 id="bj-status">БЛЭКДЖЕК</h3>
+            <input type="number" id="bj-bet" class="game-input" placeholder="Ставка">
+            <button id="bj-start-btn" class="btn btn-blue" onclick="startBJ()">ИГРАТЬ</button>
+            <div class="bj-area">
+                <div>Дилер: <span id="bj-d-val">?</span></div>
+                <div id="bj-d-cards" class="cards">🎴</div>
+                <hr>
+                <div>Вы: <span id="bj-p-val">0</span></div>
+                <div id="bj-p-cards" class="cards"></div>
             </div>
-            <div class="shop-card">
-                <div class="game-info">
-                    <div class="game-name">⚡ Средняя колба</div>
-                    <div class="game-desc">+10 000 Энергии</div>
-                </div>
-                <button class="topup-btn" onclick="openContactModal('Энергия')">Купить</button>
+            <div id="bj-ctrl" style="display:none">
+                <button class="btn btn-blue" onclick="bjHit()">ЕЩЕ</button>
+                <button class="btn btn-orange" onclick="bjStand()">ХВАТИТ</button>
             </div>
-            <div class="shop-card">
-                <div class="game-info">
-                    <div class="game-name">☢️ Реактор</div>
-                    <div class="game-desc">+100 000 Энергии</div>
-                </div>
-                <button class="topup-btn" onclick="openContactModal('Энергия')">Купить</button>
-            </div>
+            <button class="btn btn-red" onclick="exitGames()">ВЫЙТИ</button>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('clicker', this)">
-            <div class="nav-icon">💎</div>
-            <div>Фарм</div>
-        </div>
-        <div class="nav-item" onclick="switchTab('games', this)">
-            <div class="nav-icon">🎲</div>
-            <div>Игры</div>
-        </div>
-        <div class="nav-item" onclick="switchTab('shop', this)">
-            <div class="nav-icon">🛒</div>
-            <div>Магазин</div>
-        </div>
-    </div>
-
-    <div id="contact-modal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="contact-title">Покупка</div>
-            <div style="color: #cbd5e1; margin-bottom: 20px;">Для покупки или пополнения напишите администратору:</div>
-            <div style="font-size: 24px; font-weight: bold; color: #0098EA; margin-bottom: 25px;">@fresei</div>
-            <button class="modal-btn modal-close" onclick="closeModals()">Закрыть</button>
-        </div>
-    </div>
-
-    <div id="game-modal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title" id="game-title">Игра</div>
-            <input type="number" id="bet-amount" class="modal-input" placeholder="Сумма ставки (TON)">
-            <button class="modal-btn" onclick="playCurrentGame()">Сделать ставку</button>
-            <button class="modal-btn modal-close" onclick="closeModals()">Выйти</button>
-            <div id="game-result" class="modal-msg"></div>
-        </div>
+        <div class="nav-item active" onclick="switchTab('clicker', this)">💎 Фарм</div>
+        <div class="nav-item" onclick="onclick=switchTab('games', this)">🎲 Игры</div>
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand(); 
-
-        // БАЗА ДАННЫХ
-        let balance = 0;
-        let clicksTotal = 0;
-        let currentEnergy = 1000;
-        let lastSaveTime = Date.now();
-
-        // Элементы
-        const balanceEl = document.getElementById('balance');
-        const levelEl = document.getElementById('level-text');
-        const energyEl = document.getElementById('energy-text');
-        const coin = document.getElementById('coin');
-
-        // Переменные для игр
-        let currentGameName = '';
-        let currentGameMult = 1;
-        let currentGameChance = 0;
-
-        // Загрузка
-        function loadData() {
-            let saved = localStorage.getItem('ton_empire_db');
-            if (saved) {
-                let data = JSON.parse(saved);
-                balance = data.balance || 0;
-                clicksTotal = data.clicksTotal || 0;
-                currentEnergy = data.energy !== undefined ? data.energy : 1000;
-                lastSaveTime = data.lastSaveTime || Date.now();
-            }
-        }
-
-        // Логика уровней
-        function getLevel() {
-            let lvl = Math.floor(clicksTotal / 15000) + 1;
-            return lvl > 100 ? 100 : lvl;
-        }
-
-        function getMaxEnergy(lvl) {
-            if (lvl < 10) return 1000;
-            return Math.floor(lvl / 10) * 10000;
-        }
-
-        function regenOfflineEnergy() {
-            let now = Date.now();
-            let hoursPassed = (now - lastSaveTime) / (1000 * 60 * 60);
-            currentEnergy += hoursPassed * 1000;
-            let maxE = getMaxEnergy(getLevel());
-            if (currentEnergy > maxE) currentEnergy = maxE;
-            lastSaveTime = now;
-        }
-
-        function saveData() {
-            localStorage.setItem('ton_empire_db', JSON.stringify({
-                balance: balance, clicksTotal: clicksTotal, energy: currentEnergy, lastSaveTime: Date.now()
-            }));
-        }
+        let tg = window.Telegram.WebApp; tg.expand();
+        let balance = parseInt(localStorage.getItem('bal')) || 0;
+        let energy = 1000;
+        let currentBet = 0, multiplier = 1, gameActive = false;
 
         function updateUI() {
-            balanceEl.innerText = Math.floor(balance).toLocaleString();
-            let lvl = getLevel();
-            let maxE = getMaxEnergy(lvl);
-            if (lvl === 100) {
-                levelEl.innerText = `🏆 Уровень: 100 (МАКСИМУМ)`;
-                levelEl.style.color = '#ef4444';
-            } else {
-                levelEl.innerText = `🏆 Уровень: ${lvl} (${clicksTotal}/${lvl * 15000})`;
-            }
-            energyEl.innerText = `${Math.floor(currentEnergy)}/${maxE}`;
+            document.getElementById('balance').innerText = Math.floor(balance).toLocaleString();
+            document.getElementById('energy').innerText = Math.floor(energy);
+            localStorage.setItem('bal', balance);
         }
 
-        // Инициализация
-        loadData(); regenOfflineEnergy(); updateUI();
-
-        // КЛИКЕР
-        coin.addEventListener('click', () => {
-            if (currentEnergy >= 1) {
-                currentEnergy -= 1;
-                clicksTotal += 1;
-                balance += (getLevel() >= 100) ? 1000000 : 1;
-                
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-                updateUI();
-            } else {
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-                energyEl.style.color = '#ef4444'; 
-                setTimeout(() => energyEl.style.color = '#34d399', 300);
-            }
-        });
-
-        // Регенерация онлайн
-        setInterval(() => {
-            let maxE = getMaxEnergy(getLevel());
-            if (currentEnergy < maxE) {
-                currentEnergy += (1000 / 3600);
-                if (currentEnergy > maxE) currentEnergy = maxE;
-                updateUI();
-            }
-        }, 1000);
-        setInterval(saveData, 3000);
-
-        // НАВИГАЦИЯ (ВКЛАДКИ)
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active-tab'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active-tab');
-            element.classList.add('active');
-            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+            document.getElementById('tab-'+id).classList.add('active-tab');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            exitGames();
         }
 
-        // МОДАЛЬНЫЕ ОКНА
-        function closeModals() {
-            document.getElementById('contact-modal').style.display = 'none';
-            document.getElementById('game-modal').style.display = 'none';
+        function showGame(id) {
+            document.getElementById('games-menu').style.display = 'none';
+            document.querySelectorAll('.game-container').forEach(g => g.classList.remove('game-active'));
+            document.getElementById('game-'+id).classList.add('game-active');
         }
 
-        function openContactModal(title) {
-            document.getElementById('contact-title').innerText = title;
-            document.getElementById('contact-modal').style.display = 'flex';
+        function exitGames() {
+            document.getElementById('games-menu').style.display = 'flex';
+            document.querySelectorAll('.game-container').forEach(g => g.classList.remove('game-active'));
+            gameActive = false;
         }
 
-        function openGameModal(name, mult, chance) {
-            currentGameName = name; currentGameMult = mult; currentGameChance = chance;
-            document.getElementById('game-title').innerText = name;
-            document.getElementById('bet-amount').value = '';
-            document.getElementById('game-result').innerText = '';
-            document.getElementById('game-result').style.color = 'white';
-            document.getElementById('game-modal').style.display = 'flex';
-        }
-
-        // ЛОГИКА ИГРЫ (КАЗИНО)
-        function playCurrentGame() {
-            let input = document.getElementById('bet-amount').value;
-            let bet = parseInt(input);
-            let resBox = document.getElementById('game-result');
-
-            if (isNaN(bet) || bet <= 0) {
-                resBox.innerText = "Введите корректную ставку!"; resBox.style.color = '#ef4444'; return;
-            }
-            if (bet > balance) {
-                resBox.innerText = "Недостаточно TON!"; resBox.style.color = '#ef4444'; return;
-            }
-
-            // Списываем ставку
-            balance -= bet;
-            
-            // Вычисляем победу
-            let isWin = Math.random() < currentGameChance;
-            
-            if (isWin) {
-                let winAmount = bet * currentGameMult;
-                balance += winAmount;
-                resBox.innerText = `🎉 Победа! Вы выиграли ${winAmount} TON!`;
-                resBox.style.color = '#10b981';
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            } else {
-                resBox.innerText = `💥 Проигрыш. Вы потеряли ${bet} TON.`;
-                resBox.style.color = '#ef4444';
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+        // --- ЛОГИКА МИН ---
+        let minesArr = [];
+        function startMines() {
+            let b = parseInt(document.getElementById('m-bet').value);
+            if(isNaN(b) || b > balance || b <= 0) return alert("Мало TON!");
+            balance -= b; currentBet = b; multiplier = 1; gameActive = true;
+            minesArr = Array(25).fill(0).map(() => Math.random() < 0.2 ? 1 : 0);
+            let grid = document.getElementById('m-grid'); grid.innerHTML = '';
+            for(let i=0; i<25; i++) {
+                let c = document.createElement('div'); c.className = 'cell';
+                c.onclick = () => {
+                    if(!gameActive || c.innerHTML !== '') return;
+                    if(minesArr[i]) { c.innerHTML='💣'; c.style.bg='#ef4444'; gameActive=false; document.getElementById('m-status').innerText='ПРОИГРЫШ!'; }
+                    else { c.innerHTML='💎'; multiplier += 0.4; document.getElementById('m-cashout').style.display='block'; }
+                    updateUI();
+                };
+                grid.appendChild(c);
             }
             updateUI();
-            saveData();
         }
+        function cashoutMines() { balance += currentBet * multiplier; exitGames(); updateUI(); }
+
+        // --- ЛОГИКА ЛЕСЕНКИ ---
+        let currentStep = 0;
+        function startLadder() {
+            let b = parseInt(document.getElementById('l-bet').value);
+            if(isNaN(b) || b > balance || b <= 0) return alert("Мало TON!");
+            balance -= b; currentBet = b; multiplier = 1; currentStep = 0; gameActive = true;
+            let grid = document.getElementById('l-grid'); grid.innerHTML = '';
+            for(let i=0; i<5; i++) {
+                let row = document.createElement('div'); row.className = 'ladder-row';
+                let trap = Math.floor(Math.random()*2);
+                row.innerHTML = `<div class="ladder-cell" onclick="stepLadder(0, ${trap}, ${i}, this)">?</div>
+                                 <div class="ladder-cell" onclick="stepLadder(1, ${trap}, ${i}, this)">?</div>`;
+                grid.appendChild(row);
+            }
+            updateUI();
+        }
+        function stepLadder(choice, trap, step, el) {
+            if(!gameActive || step !== currentStep) return;
+            if(choice === trap) { el.innerHTML='💥'; gameActive=false; }
+            else { el.innerHTML='💎'; multiplier *= 1.8; currentStep++; document.getElementById('l-cashout').style.display='block'; }
+        }
+        function cashoutLadder() { balance += currentBet * multiplier; exitGames(); updateUI(); }
+
+        // --- ЛОГИКА БЛЭКДЖЕКА ---
+        let pScore = 0, dScore = 0;
+        function startBJ() {
+            let b = parseInt(document.getElementById('bj-bet').value);
+            if(isNaN(b) || b > balance || b <= 0) return alert("Мало TON!");
+            balance -= b; currentBet = b; gameActive = true;
+            pScore = Math.floor(Math.random()*10)+2 + Math.floor(Math.random()*10)+2;
+            dScore = Math.floor(Math.random()*10)+2;
+            document.getElementById('bj-p-val').innerText = pScore;
+            document.getElementById('bj-d-val').innerText = dScore;
+            document.getElementById('bj-ctrl').style.display = 'block';
+            document.getElementById('bj-start-btn').style.display = 'none';
+            updateUI();
+        }
+        function bjHit() {
+            pScore += Math.floor(Math.random()*10)+2;
+            document.getElementById('bj-p-val').innerText = pScore;
+            if(pScore > 21) { document.getElementById('bj-status').innerText='ПЕРЕБОР!'; bjEnd(false); }
+        }
+        function bjStand() {
+            while(dScore < 17) dScore += Math.floor(Math.random()*10)+2;
+            document.getElementById('bj-d-val').innerText = dScore;
+            if(dScore > 21 || pScore > dScore) bjEnd(true);
+            else bjEnd(false);
+        }
+        function bjEnd(win) {
+            gameActive = false;
+            if(win) { balance += currentBet * 2; document.getElementById('bj-status').innerText='ПОБЕДА!'; }
+            else { document.getElementById('bj-status').innerText='ПРОИГРЫШ'; }
+            setTimeout(exitGames, 2000);
+            document.getElementById('bj-ctrl').style.display = 'none';
+            document.getElementById('bj-start-btn').style.display = 'block';
+            updateUI();
+        }
+
+        document.getElementById('coin').onclick = () => { if(energy>0){ balance++; energy--; updateUI(); } };
+        setInterval(() => { if(energy<1000) energy+=0.5; updateUI(); }, 1000);
+        updateUI();
     </script>
 </body>
 </html>
