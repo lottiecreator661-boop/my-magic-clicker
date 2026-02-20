@@ -1,273 +1,63 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON EMPIRE: TRUE GOD MODE</title>
-    <style>
-        :root { --blue: #00d2ff; --neon: #00f2ff; --glass: rgba(255, 255, 255, 0.07); --gold: #ffd700; --red: #ff4444; }
-        body { background: #020408; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
-        
-        .overdrive-active { background: radial-gradient(circle, #1a0033 0%, #020408 100%) !important; box-shadow: inset 0 0 100px #ff00ff !important; }
-        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--blue); }
-        .balance { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--blue); }
-
-        .tab-content { display: none; padding: 20px; height: 75vh; overflow-y: auto; flex-direction: column; align-items: center; padding-bottom: 120px; }
-        .active { display: flex; }
-
-        #coin { width: 170px; height: 170px; background: linear-gradient(135deg, var(--blue), #3a7bd5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 60px; box-shadow: 0 0 30px var(--blue); border: 4px solid #fff; cursor: pointer; transition: 0.1s; z-index: 5; margin-top: 20px;}
-        .ov-container { width: 80%; height: 6px; background: #111; border-radius: 10px; margin-top: 15px; overflow: hidden; }
-        #ov-fill { width: 0%; height: 100%; background: #ff00ff; transition: 0.1s; }
-
-        .card { background: var(--glass); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 18px; padding: 15px; margin: 10px 0; width: 100%; box-sizing: border-box; backdrop-filter: blur(5px); }
-        .btn-blue { background: linear-gradient(90deg, var(--blue), #3a7bd5); border: none; color: #fff; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; }
-        .btn-gold { background: linear-gradient(90deg, var(--gold), #ff8c00); border: none; color: #000; padding: 12px; border-radius: 12px; font-weight: 900; width: 100%; cursor: pointer; }
-
-        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; width: 100%; }
-        .m-cell { background: rgba(255,255,255,0.05); height: 50px; border-radius: 10px; border: 1px solid var(--blue); display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        
-        .ladder-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; width: 100%; opacity: 0.4; }
-        .ladder-row.active-row { opacity: 1; }
-
-        .menu { position: fixed; bottom: 0; width: 100%; display: flex; background: #050a14; padding: 15px 0 35px; border-top: 1px solid var(--blue); }
-        .menu-item { flex: 1; text-align: center; color: #555; font-size: 10px; font-weight: bold; }
-        .menu-item.active-nav { color: var(--blue); }
-        .menu-item b { font-size: 22px; display: block; }
-
-        input { background: #000; border: 1px solid var(--blue); color: #fff; padding: 10px; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 8px; }
-        #admin-panel { display: none; } /* Скрыто для всех по умолчанию */
-    </style>
-</head>
-<body>
-
-<div class="header">
-    <div>
-        <div class="balance"><span id="bal">0</span> TON</div>
-        <div style="color: #00ff88; font-size: 12px;">Доход: +<span id="pps">0</span>/s</div>
-    </div>
-    <div id="vip-status"></div>
-</div>
-
-<div id="farm" class="tab-content active">
-    <div id="coin">💎</div>
-    <div class="ov-container"><div id="ov-fill"></div></div>
-    <div class="card" style="margin-top: 20px;">
-        <div style="display:flex; justify-content:space-between; font-size: 12px;"><span>⚡ ЭНЕРГИЯ</span><span id="nrg-txt">0/0</span></div>
-        <div style="width:100%; height:8px; background:#111; border-radius:10px; margin-top:5px;"><div id="nrg-fill" style="height:100%; background:var(--blue); border-radius:10px;"></div></div>
-    </div>
-</div>
-
-<div id="shop" class="tab-content">
-    <div class="card" style="border: 1px solid var(--gold); text-align:center;">
-        <h3 style="color: var(--gold);">📦 КЕЙС</h3>
-        <button class="btn-gold" onclick="openCase()">ОТКРЫТЬ (500 TON)</button>
-    </div>
-    <div class="card">
-        <h3>GPU RTX 3060</h3>
-        <p>+0.5/сек | Цена: 1000 TON</p>
-        <button class="btn-blue" onclick="buyFarm(1000, 0.5)">КУПИТЬ</button>
-    </div>
-    <div class="card">
-        <h3>SERVER RACK</h3>
-        <p>+5.0/сек | Цена: 5000 TON</p>
-        <button class="btn-blue" onclick="buyFarm(5000, 5.0)">КУПИТЬ</button>
-    </div>
-</div>
-
-<div id="games" class="tab-content">
-    <div id="g-list" style="width:100%">
-        <div class="card" onclick="openGame('mines')">💣 МИНЫ</div>
-        <div class="card" onclick="openGame('ladder')">🪜 ЛЕСЕНКА</div>
-        <div class="card" onclick="openGame('bj')">🃏 БЛЭКДЖЕК</div>
-    </div>
-    <div id="g-play" style="display:none; width:100%">
-        <h2 id="g-title" style="color:var(--blue)">ИГРА</h2>
-        <div id="g-area"></div>
-        <div id="g-status" style="color:var(--gold); font-weight:bold; margin:10px; text-align:center;"></div>
-        <button id="cash-btn" class="btn-gold" style="display:none" onclick="cashout()">ЗАБРАТЬ</button>
-        <button id="back-btn" class="btn-blue" style="background:#333" onclick="closeGame()">НАЗАД</button>
-    </div>
-</div>
-
-<div id="profile" class="tab-content">
-    <div class="card">
-        <h3>СТАТИСТИКА</h3>
-        <p>Игр: <span id="st-t">0</span> | Побед: <span id="st-w">0</span></p>
-        <input type="text" id="promo-in" placeholder="Промокод">
-        <button class="btn-blue" onclick="usePromo()">АКТИВИРОВАТЬ</button>
-    </div>
-    <div id="admin-panel">
-        <div class="card" style="border: 2px solid red;">
-            <h3 style="color:red">GOD ADMIN</h3>
-            <input type="number" id="adm-id" placeholder="ID игрока">
-            <input type="number" id="adm-val" placeholder="Сумма">
-            <button class="btn-gold" onclick="admAct('ton')">ДАТЬ TON</button>
-            <button class="btn-blue" onclick="admAct('vip')">ДАТЬ VIP</button>
+<div id="game-board" class="hidden fixed inset-0 bg-white z-[60] p-4">
+    <div class="flex justify-between items-center mb-6">
+        <button onclick="closeGame()" class="text-blue-500 font-bold">← Выйти</button>
+        <div class="text-center">
+            <p class="text-xs text-gray-400">Ставка</p>
+            <p id="current-bet" class="font-bold">100 mCoin</p>
         </div>
+        <div class="w-10"></div>
     </div>
-</div>
 
-<div class="menu">
-    <div class="menu-item active-nav" onclick="tab('farm', this)"><b>⛏</b>КЛИК</div>
-    <div class="menu-item" onclick="tab('games', this)"><b>🎲</b>ИГРЫ</div>
-    <div class="menu-item" onclick="tab('shop', this)"><b>🛒</b>ШОП</div>
-    <div class="menu-item" onclick="tab('profile', this)"><b>👤</b>ПРОФИЛЬ</div>
+    <div class="grid grid-cols-5 gap-2" id="grid">
+        </div>
+
+    <div class="mt-8 space-y-4">
+        <button id="start-game-btn" onclick="initGame()" class="w-full bg-blue-500 text-white py-4 rounded-2xl font-bold btn-click">
+            Начать игру
+        </button>
+    </div>
 </div>
 
 <script>
-    const MY_ID = 8388334620;
-    let db = JSON.parse(localStorage.getItem('ton_v10')) || {
-        bal: 1000, nrg: 2500, pps: 0, vip: false, ov: 0, st_t: 0, st_w: 0, last: Date.now()
-    };
+    let mines = [];
+    let gameOver = false;
 
-    let ovActive = false, gameActive = false, cur = {};
-
-    function save() { localStorage.setItem('ton_v10', JSON.stringify(db)); }
-
-    function update() {
-        let dt = (Date.now() - db.last) / 1000;
-        db.bal += db.pps * dt;
-        let maxN = db.vip ? 25000 : 2500;
-        if(db.nrg < maxN) db.nrg = Math.min(maxN, db.nrg + (dt * 5));
-        if(!ovActive && db.ov > 0) db.ov -= 0.5;
-
-        document.getElementById('bal').innerText = Math.floor(db.bal);
-        document.getElementById('pps').innerText = db.pps.toFixed(1);
-        document.getElementById('nrg-txt').innerText = Math.floor(db.nrg) + "/" + maxN;
-        document.getElementById('nrg-fill').style.width = (db.nrg / maxN * 100) + "%";
-        document.getElementById('ov-fill').style.width = db.ov + "%";
-        document.getElementById('st-t').innerText = db.st_t;
-        document.getElementById('st-w').innerText = db.st_w;
-
-        if(db.vip) document.getElementById('vip-status').innerHTML = '⭐';
-        if(MY_ID === 8388334620) document.getElementById('admin-panel').style.display = 'block';
-        else document.getElementById('admin-panel').remove(); // Удаляем из DOM для других
-
-        db.last = Date.now();
-        save();
-    }
-
-    // ТАП
-    document.getElementById('coin').onclick = (e) => {
-        if(db.nrg >= 1 || ovActive) {
-            let add = ovActive ? 10 : (db.vip ? 1 : 0.5);
-            if(!ovActive) { db.nrg--; db.ov += 2; if(db.ov >= 100) startOV(); }
-            db.bal += add; update();
+    function initGame() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        mines = Array(25).fill(false);
+        // Расставляем 3 мины случайно
+        let count = 0;
+        while(count < 3) {
+            let idx = Math.floor(Math.random() * 25);
+            if(!mines[idx]) { mines[idx] = true; count++; }
         }
-    };
-
-    function startOV() {
-        ovActive = true; document.body.classList.add('overdrive-active');
-        let t = setInterval(() => { db.ov -= 10; if(db.ov <= 0) { clearInterval(t); ovActive = false; document.body.classList.remove('overdrive-active'); db.ov = 0; } update(); }, 1000);
-    }
-
-    // ИГРЫ
-    function openGame(t) {
-        document.getElementById('g-list').style.display = 'none';
-        document.getElementById('g-play').style.display = 'block';
-        let area = document.getElementById('g-area'); area.innerHTML = '';
-        if(t === 'mines') {
-            area.innerHTML = `<input id="bet" type="number" placeholder="Ставка"><input id="m-cnt" type="number" placeholder="Кол-во мин (1-24)" value="3">
-            <button class="btn-blue" onclick="startMines()">ИГРАТЬ</button><div id="grid" class="mines-grid"></div>`;
-        } else if(t === 'ladder') {
-            area.innerHTML = `<input id="bet" type="number" placeholder="Ставка"><button class="btn-blue" onclick="startLadder()">ИГРАТЬ</button><div id="l-grid"></div>`;
-        } else if(t === 'bj') {
-            area.innerHTML = `<input id="bet" type="number" placeholder="Ставка"><button class="btn-blue" onclick="startBJ()">ИГРАТЬ</button>
-            <div id="bj-box" style="display:none; text-align:center; margin-top:10px">
-                <p>Дилер: <span id="bj-d">?</span> | Вы: <span id="bj-p">0</span></p>
-                <button class="btn-blue" onclick="bjDraw('p')">ВЗЯТЬ</button> <button class="btn-gold" onclick="bjStay()">СТОП</button>
-            </div>`;
-        }
-    }
-
-    // ЛОГИКА МИН
-    function startMines() {
-        let b = getBet(), m = parseInt(document.getElementById('m-cnt').value);
-        if(!b || isNaN(m) || m<1 || m>24) return alert("Ошибка настроек!");
-        cur = {bet:b, m_cnt:m, bombs:[], mult:1, open:0}; gameActive = true;
-        while(cur.bombs.length < m) { let r = Math.floor(Math.random()*25); if(!cur.bombs.includes(r)) cur.bombs.push(r); }
-        let g = document.getElementById('grid'); g.innerHTML = '';
+        
+        gameOver = false;
         for(let i=0; i<25; i++) {
-            let c = document.createElement('div'); c.className = 'm-cell'; c.innerText = '❓';
-            c.onclick = () => {
-                if(!gameActive || c.style.background !== '') return;
-                if(cur.bombs.includes(i)) { c.style.background = 'red'; c.innerText = '💣'; end(false); }
-                else { 
-                    c.style.background = 'green'; c.innerText = '💎'; cur.open++; 
-                    cur.mult += (cur.m_cnt * 0.2); document.getElementById('cash-btn').style.display = 'block';
-                    document.getElementById('g-status').innerText = "Множитель: x" + cur.mult.toFixed(2);
-                }
-            }; g.appendChild(c);
+            const cell = document.createElement('div');
+            cell.className = "h-14 bg-gray-200 rounded-xl flex items-center justify-center text-xl cursor-pointer btn-click";
+            cell.onclick = () => checkCell(cell, i);
+            grid.appendChild(cell);
+        }
+        document.getElementById('start-game-btn').innerText = "Игра идет...";
+    }
+
+    function checkCell(cell, idx) {
+        if(gameOver) return;
+        if(mines[idx]) {
+            cell.className = "h-14 bg-red-500 rounded-xl flex items-center justify-center text-white";
+            cell.innerHTML = "💣";
+            alert("БУМ! Вы проиграли.");
+            gameOver = true;
+            document.getElementById('start-game-btn').innerText = "Попробовать снова";
+        } else {
+            cell.className = "h-14 bg-green-500 rounded-xl flex items-center justify-center text-white";
+            cell.innerHTML = "💎";
+            // Тут можно добавить логику увеличения множителя
         }
     }
 
-    // ЛОГИКА ЛЕСЕНКИ
-    function startLadder() {
-        let b = getBet(); if(!b) return;
-        cur = {bet:b, step:0, mult:1.2}; gameActive = true;
-        let g = document.getElementById('l-grid'); g.innerHTML = '';
-        for(let i=0; i<7; i++) {
-            let r = document.createElement('div'); r.className = 'ladder-row'; r.id = 'l-row-'+i;
-            if(i === 0) r.classList.add('active-row');
-            r.innerHTML = `<button class="btn-blue" onclick="stepL(${i}, 0)">?</button><button class="btn-blue" onclick="stepL(${i}, 1)">?</button>`;
-            g.prepend(r);
-        }
-    }
-    function stepL(row, side) {
-        if(!gameActive || row !== cur.step) return;
-        if(Math.random() > 0.4) {
-            cur.step++; cur.mult *= 1.8;
-            document.getElementById('g-status').innerText = "Множитель: x" + cur.mult.toFixed(1);
-            document.getElementById('cash-btn').style.display = 'block';
-            if(cur.step < 7) document.getElementById('l-row-'+cur.step).classList.add('active-row');
-            else cashout();
-        } else end(false);
-    }
-
-    // ЛОГИКА BJ
-    let pK=[], dK=[];
-    function startBJ() { 
-        let b = getBet(); if(!b) return;
-        document.getElementById('bj-box').style.display = 'block';
-        pK = [rk(), rk()]; dK = [rk()]; gameActive = true; cur = {bet:b, mult:2}; updBJ();
-    }
-    function rk() { return Math.floor(Math.random()*10)+2; }
-    function updBJ() {
-        let s = pK.reduce((a,b)=>a+b);
-        document.getElementById('bj-p').innerText = s;
-        document.getElementById('bj-d').innerText = dK.join(', ');
-        if(s > 21) end(false); else if(s === 21) bjStay();
-    }
-    function bjDraw() { if(!gameActive) return; pK.push(rk()); updBJ(); }
-    function bjStay() {
-        if(!gameActive) return;
-        let ds = dK.reduce((a,b)=>a+b);
-        while(ds < 17) { dK.push(rk()); ds = dK.reduce((a,b)=>a+b); }
-        updBJ();
-        let ps = pK.reduce((a,b)=>a+b);
-        if(ds > 21 || ps > ds) cashout(); else end(false);
-    }
-
-    // СИСТЕМНЫЕ
-    function getBet() {
-        let b = parseInt(document.getElementById('bet').value);
-        if(isNaN(b) || b < 10 || b > db.bal) { alert("Неверная ставка!"); return null; }
-        db.bal -= b; db.st_t++; update(); return b;
-    }
-    function cashout() { db.bal += Math.floor(cur.bet * cur.mult); db.st_w++; end(true); }
-    function end(win) { 
-        gameActive = false; 
-        document.getElementById('g-status').innerText = win ? "ВЫИГРЫШ!" : "ПРОИГРЫШ!";
-        document.getElementById('cash-btn').style.display = 'none';
-        update(); 
-    }
-    function closeGame() { gameActive = false; document.getElementById('g-list').style.display='block'; document.getElementById('g-play').style.display='none'; }
-    function buyFarm(p, r) { if(db.bal >= p) { db.bal -= p; db.pps += r; alert("Куплено!"); update(); } }
-    function admAct(t) { if(MY_ID!==8388334620)return; let v = parseInt(document.getElementById('adm-val').value); if(t==='ton')db.bal+=v; else db.vip=true; update(); }
-    function tab(id, el) { document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active-nav')); el.classList.add('active-nav'); }
-
-    setInterval(update, 1000);
-    update();
+    function openGame() { document.getElementById('game-board').classList.remove('hidden'); }
+    function closeGame() { document.getElementById('game-board').classList.add('hidden'); }
 </script>
-</body>
-</html>
