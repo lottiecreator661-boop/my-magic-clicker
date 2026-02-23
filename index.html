@@ -11,37 +11,40 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
             background: black;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 10px;
+            padding: 0;
+            margin: 0;
         }
 
         .app {
             width: 100%;
-            max-width: 380px;
-            height: 700px;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 750px;
             background: black;
             border: 1px solid #222;
             border-radius: 30px;
             display: flex;
             flex-direction: column;
-            position: relative;
+            overflow: hidden;
         }
 
         /* Шапка */
         .header {
-            padding: 15px;
+            padding: 15px 20px;
             border-bottom: 1px solid #222;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: black;
         }
 
         .balance {
@@ -62,37 +65,45 @@
             color: white;
         }
 
-        .balance-text {
+        .balance-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .balance-label {
             color: #666;
             font-size: 12px;
+        }
+
+        .balance-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .balance-amount {
             color: white;
             font-size: 24px;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
-        .vip-tag {
+        .vip-badge {
             background: gold;
             color: black;
             font-size: 10px;
-            padding: 2px 6px;
+            padding: 2px 8px;
             border-radius: 20px;
             font-weight: bold;
         }
 
-        .online-btn {
+        .online {
             background: #111;
             border: 2px solid #22c55e;
-            border-radius: 30px;
-            padding: 8px 15px;
+            border-radius: 40px;
+            padding: 8px 16px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             cursor: pointer;
         }
 
@@ -109,43 +120,16 @@
             font-weight: 500;
         }
 
-        /* Активные бустеры */
-        .boosters-active {
-            position: absolute;
-            top: 80px;
-            right: 15px;
-            z-index: 10;
+        /* Меню */
+        .menu {
             display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .booster-active {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 30px;
-            padding: 5px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: white;
-        }
-
-        .booster-time {
-            color: #22c55e;
-            font-weight: 600;
-        }
-
-        /* Меню навигации */
-        .nav-menu {
-            display: flex;
-            padding: 10px 15px;
+            padding: 10px 20px;
             gap: 30px;
             border-bottom: 1px solid #222;
+            background: black;
         }
 
-        .nav-item {
+        .menu-item {
             color: #444;
             font-size: 16px;
             font-weight: 600;
@@ -153,7 +137,7 @@
             padding-bottom: 8px;
         }
 
-        .nav-item.active {
+        .menu-item.active {
             color: white;
             border-bottom: 2px solid white;
         }
@@ -162,18 +146,19 @@
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 15px;
+            padding: 20px;
+            background: black;
         }
 
-        /* Тап кнопка */
-        .tap-container {
+        /* Тап область */
+        .tap-area {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 20px 0;
+            margin-bottom: 30px;
         }
 
-        .tap-btn {
+        .tap-button {
             width: 240px;
             height: 240px;
             background: #111;
@@ -185,10 +170,9 @@
             justify-content: center;
             cursor: pointer;
             margin-bottom: 15px;
-            transition: all 0.1s;
         }
 
-        .tap-btn:active {
+        .tap-button:active {
             transform: scale(0.95);
             background: #1a1a1a;
         }
@@ -198,13 +182,13 @@
             color: white;
         }
 
-        .tap-label {
+        .tap-text {
             color: white;
             font-size: 20px;
             font-weight: bold;
         }
 
-        .energy-info {
+        .energy-text {
             color: #666;
             font-size: 14px;
         }
@@ -220,8 +204,8 @@
         .cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .card {
@@ -235,9 +219,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 10px;
             color: #666;
             font-size: 14px;
+            margin-bottom: 10px;
         }
 
         .card-number {
@@ -265,7 +249,7 @@
             border-radius: 10px;
         }
 
-        /* Инфо строка */
+        /* Информационная строка */
         .info-row {
             background: #111;
             border: 1px solid #222;
@@ -281,13 +265,41 @@
             font-weight: bold;
         }
 
+        /* Активные бустеры */
+        .active-boosters {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .active-booster {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 30px;
+            padding: 5px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .booster-time {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
         /* Магазин */
         .shop-item {
             background: #111;
             border: 1px solid #222;
             border-radius: 20px;
             padding: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             cursor: pointer;
         }
 
@@ -315,7 +327,7 @@
         .shop-price {
             background: #222;
             color: white;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: bold;
@@ -333,21 +345,11 @@
         }
 
         /* Инвентарь */
-        .inventory {
-            margin-top: 15px;
-        }
-
-        .inventory-title {
-            display: flex;
-            justify-content: space-between;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
         .inventory-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            gap: 10px;
+            margin-top: 15px;
         }
 
         .inventory-item {
@@ -386,7 +388,7 @@
         }
 
         /* Профиль */
-        .profile-card {
+        .profile-header {
             background: #111;
             border: 1px solid #222;
             border-radius: 20px;
@@ -395,7 +397,7 @@
             margin-bottom: 15px;
         }
 
-        .avatar {
+        .profile-avatar {
             width: 70px;
             height: 70px;
             background: #1a1a1a;
@@ -407,20 +409,20 @@
             margin: 0 auto 10px;
         }
 
-        .name {
+        .profile-name {
             color: white;
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 5px;
         }
 
-        .id {
+        .profile-id {
             color: #666;
             font-size: 12px;
             margin-bottom: 10px;
         }
 
-        .vip-active {
+        .profile-vip {
             display: inline-block;
             border: 1px solid gold;
             color: gold;
@@ -430,7 +432,7 @@
             font-weight: bold;
         }
 
-        .stat-list {
+        .stats-list {
             background: #111;
             border: 1px solid #222;
             border-radius: 20px;
@@ -449,7 +451,7 @@
         }
 
         /* Рулетка */
-        .roulette-bg {
+        .roulette-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -493,11 +495,11 @@
             font-size: 40px;
         }
 
-        .spin-animation {
-            animation: shake 0.1s infinite;
+        .spinning {
+            animation: spin 0.1s infinite;
         }
 
-        @keyframes shake {
+        @keyframes spin {
             0% { transform: translateY(-5px); }
             50% { transform: translateY(5px); }
             100% { transform: translateY(-5px); }
@@ -537,11 +539,10 @@
             border: 2px solid;
             font-weight: bold;
             z-index: 10000;
-            animation: toastFade 1.5s forwards;
-            pointer-events: none;
+            animation: fade 1.5s forwards;
         }
 
-        @keyframes toastFade {
+        @keyframes fade {
             0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
             20% { opacity: 1; transform: translateX(-50%) translateY(0); }
             80% { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -549,7 +550,7 @@
         }
 
         /* Парящий текст */
-        .float-text {
+        .float {
             position: fixed;
             color: white;
             font-size: 22px;
@@ -563,6 +564,15 @@
             0% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-100px); }
         }
+
+        /* Скрытые табы */
+        .tab {
+            display: none;
+        }
+
+        .tab.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -571,42 +581,42 @@
         <div class="header">
             <div class="balance">
                 <div class="balance-icon">₿</div>
-                <div>
-                    <div class="balance-text">Баланс TON</div>
-                    <div class="balance-amount">
-                        <span id="tonDisplay">1000</span>
-                        <span class="vip-tag" id="vipTag" style="display: none;">VIP</span>
+                <div class="balance-info">
+                    <div class="balance-label">Баланс TON</div>
+                    <div class="balance-row">
+                        <span class="balance-amount" id="tonAmount">1000</span>
+                        <span class="vip-badge" id="vipBadge" style="display: none;">VIP</span>
                     </div>
                 </div>
             </div>
-            <div class="online-btn" id="onlineBtn">
+            <div class="online" id="onlineBtn">
                 <div class="online-dot"></div>
                 <span class="online-text">ONLINE</span>
             </div>
         </div>
 
         <!-- Активные бустеры -->
-        <div class="boosters-active" id="boostersActive"></div>
+        <div class="active-boosters" id="activeBoosters"></div>
 
-        <!-- Навигация -->
-        <div class="nav-menu">
-            <div class="nav-item active" data-tab="home">Home</div>
-            <div class="nav-item" data-tab="shop">Shop</div>
-            <div class="nav-item" data-tab="profile">Profile</div>
-            <div class="nav-item" data-tab="game">Game</div>
+        <!-- Меню -->
+        <div class="menu">
+            <div class="menu-item active" data-tab="home">Home</div>
+            <div class="menu-item" data-tab="shop">Shop</div>
+            <div class="menu-item" data-tab="profile">Profile</div>
+            <div class="menu-item" data-tab="game">Game</div>
         </div>
 
         <!-- Контент -->
         <div class="content">
             <!-- Главная -->
-            <div id="home" class="tab-content" style="display: block;">
-                <div class="tap-container">
-                    <div class="tap-btn" id="tapBtn">
+            <div id="home" class="tab active">
+                <div class="tap-area">
+                    <div class="tap-button" id="tapBtn">
                         <div class="tap-icon">💎</div>
-                        <div class="tap-label">TAP</div>
+                        <div class="tap-text">TAP</div>
                     </div>
                     <div>
-                        <span class="energy-info">⚡ Энергия</span>
+                        <span class="energy-text">⚡ Энергия</span>
                         <span class="energy-value" id="energyDisplay">2500/2500</span>
                     </div>
                 </div>
@@ -622,7 +632,6 @@
                             <div class="progress-fill" id="energyProgress" style="width: 100%"></div>
                         </div>
                     </div>
-
                     <div class="card">
                         <div class="card-header">
                             <span>🚀</span> Multiplier
@@ -636,15 +645,15 @@
                 </div>
 
                 <div class="info-row">
-                    <span>💰 Заработано всего:</span>
-                    <span class="info-value" id="totalEarnedDisplay">0 TON</span>
+                    <span>💰 Заработано:</span>
+                    <span class="info-value" id="totalEarned">0 TON</span>
                 </div>
             </div>
 
             <!-- Магазин -->
-            <div id="shop" class="tab-content" style="display: none;">
+            <div id="shop" class="tab">
                 <div class="card" style="margin-bottom: 15px;">
-                    <div class="info-row" style="padding: 0;">
+                    <div class="info-row" style="padding: 10px;">
                         <span>💰 Твой баланс</span>
                         <span class="info-value" id="shopBalance">1000 TON</span>
                     </div>
@@ -656,7 +665,7 @@
                         <span class="shop-price">10,000 TON</span>
                     </div>
                     <div class="shop-desc">✨ +10 TON за каждый тап</div>
-                    <div class="shop-info">Длительность: 30 дней</div>
+                    <div class="shop-info">30 дней</div>
                 </div>
 
                 <div class="shop-item" id="caseItem">
@@ -665,26 +674,26 @@
                         <span class="shop-price">1,000 TON</span>
                     </div>
                     <div class="shop-desc">⚡ Турбо 10% | 💎 Кристалл 10% | 🚀 Буст 10% | 💩 Пустышка 70%</div>
-                    <div class="shop-info">Длительность: 15 минут</div>
+                    <div class="shop-info">15 минут</div>
                 </div>
 
-                <div class="inventory">
-                    <div class="inventory-title">
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; color: #666; margin-bottom: 10px;">
                         <span>📦 Инвентарь</span>
-                        <span style="color: #666; cursor: pointer;" id="useAllBtn">Использовать все</span>
+                        <span style="cursor: pointer;" id="useAllBtn">Использовать все</span>
                     </div>
                     <div class="inventory-grid">
-                        <div class="inventory-item" id="useTurboBtn">
+                        <div class="inventory-item" id="useTurbo">
                             <div class="item-icon">⚡</div>
                             <div class="item-name">Turbo</div>
                             <span class="item-count" id="turboCount">0</span>
                         </div>
-                        <div class="inventory-item" id="useCrystalBtn">
+                        <div class="inventory-item" id="useCrystal">
                             <div class="item-icon">💎</div>
                             <div class="item-name">Crystal</div>
                             <span class="item-count" id="crystalCount">0</span>
                         </div>
-                        <div class="inventory-item" id="useBoostBtn">
+                        <div class="inventory-item" id="useBoost">
                             <div class="item-icon">🚀</div>
                             <div class="item-name">Boost</div>
                             <span class="item-count" id="boostCount">0</span>
@@ -694,15 +703,15 @@
             </div>
 
             <!-- Профиль -->
-            <div id="profile" class="tab-content" style="display: none;">
-                <div class="profile-card">
-                    <div class="avatar">👤</div>
-                    <div class="name">Игрок</div>
-                    <div class="id">TON-12345</div>
-                    <div class="vip-active" id="profileVip" style="display: none;">VIP ELITE</div>
+            <div id="profile" class="tab">
+                <div class="profile-header">
+                    <div class="profile-avatar">👤</div>
+                    <div class="profile-name">Игрок</div>
+                    <div class="profile-id">TON-12345</div>
+                    <div class="profile-vip" id="profileVip" style="display: none;">VIP ELITE</div>
                 </div>
 
-                <div class="stat-list">
+                <div class="stats-list">
                     <div class="stat-row">
                         <span>Всего тапов</span>
                         <span class="info-value" id="profileTaps">0</span>
@@ -723,7 +732,7 @@
             </div>
 
             <!-- Игры -->
-            <div id="game" class="tab-content" style="display: none;">
+            <div id="game" class="tab">
                 <div class="card" style="text-align: center; padding: 40px;">
                     <div style="font-size: 60px; margin-bottom: 20px;">🎮</div>
                     <div style="color: white; font-size: 24px; font-weight: bold; margin-bottom: 10px;">Скоро!</div>
@@ -733,7 +742,7 @@
         </div>
 
         <!-- Рулетка -->
-        <div class="roulette-bg" id="roulette">
+        <div class="roulette-overlay" id="roulette">
             <div class="roulette-box">
                 <div class="roulette-title">🎲 Открытие кейса</div>
                 <div class="roulette-items">
@@ -747,7 +756,13 @@
     </div>
 
     <script>
-        // Игровые переменные
+        // Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.ready()
+            window.Telegram.WebApp.expand()
+        }
+
+        // Данные игры
         let tons = 1000
         let totalEarned = 0
         let energy = 2500
@@ -758,14 +773,14 @@
         let vipExpiry = null
         
         // Инвентарь
-        let inventory = {
+        let inv = {
             turbo: 0,
             crystal: 0,
             boost: 0
         }
         
         // Активные бустеры
-        let activeBoosters = {
+        let active = {
             turbo: false,
             turboEnd: 0,
             crystal: false,
@@ -774,16 +789,16 @@
             boostEnd: 0
         }
 
-        // Получаем элементы
-        const tonDisplay = document.getElementById('tonDisplay')
-        const vipTag = document.getElementById('vipTag')
+        // Элементы
+        const tonAmount = document.getElementById('tonAmount')
+        const vipBadge = document.getElementById('vipBadge')
         const energyDisplay = document.getElementById('energyDisplay')
         const energyNumber = document.getElementById('energyNumber')
         const energyProgress = document.getElementById('energyProgress')
         const multiplierDisplay = document.getElementById('multiplierDisplay')
         const multiplierProgress = document.getElementById('multiplierProgress')
         const multiplierBar = document.getElementById('multiplierBar')
-        const totalEarnedDisplay = document.getElementById('totalEarnedDisplay')
+        const totalEarnedEl = document.getElementById('totalEarned')
         const shopBalance = document.getElementById('shopBalance')
         
         const profileTaps = document.getElementById('profileTaps')
@@ -796,7 +811,7 @@
         const crystalCount = document.getElementById('crystalCount')
         const boostCount = document.getElementById('boostCount')
         
-        const boostersActive = document.getElementById('boostersActive')
+        const activeBoosters = document.getElementById('activeBoosters')
         const roulette = document.getElementById('roulette')
         const slot1 = document.getElementById('slot1')
         const slot2 = document.getElementById('slot2')
@@ -808,46 +823,37 @@
         const vipItem = document.getElementById('vipItem')
         const caseItem = document.getElementById('caseItem')
         const useAllBtn = document.getElementById('useAllBtn')
-        const useTurboBtn = document.getElementById('useTurboBtn')
-        const useCrystalBtn = document.getElementById('useCrystalBtn')
-        const useBoostBtn = document.getElementById('useBoostBtn')
+        const useTurbo = document.getElementById('useTurbo')
+        const useCrystal = document.getElementById('useCrystal')
+        const useBoost = document.getElementById('useBoost')
         const closeRoulette = document.getElementById('closeRoulette')
-        
-        // Навигация
-        const navItems = document.querySelectorAll('.nav-item')
-        const tabs = {
-            home: document.getElementById('home'),
-            shop: document.getElementById('shop'),
-            profile: document.getElementById('profile'),
-            game: document.getElementById('game')
-        }
 
         // Переключение вкладок
-        navItems.forEach(item => {
-            item.addEventListener('click', function() {
-                navItems.forEach(n => n.classList.remove('active'))
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault()
+                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'))
                 this.classList.add('active')
                 
-                const tabName = this.dataset.tab
-                Object.values(tabs).forEach(tab => tab.style.display = 'none')
-                tabs[tabName].style.display = 'block'
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+                document.getElementById(this.dataset.tab).classList.add('active')
             })
         })
 
-        // Функция показа уведомления
-        function showToast(msg, isError = false) {
-            const toast = document.createElement('div')
-            toast.className = 'toast'
-            toast.textContent = msg
-            toast.style.borderColor = isError ? '#ef4444' : '#22c55e'
-            document.body.appendChild(toast)
-            setTimeout(() => toast.remove(), 1500)
+        // Уведомление
+        function toast(msg, err = false) {
+            const t = document.createElement('div')
+            t.className = 'toast'
+            t.textContent = msg
+            t.style.borderColor = err ? '#ef4444' : '#22c55e'
+            document.body.appendChild(t)
+            setTimeout(() => t.remove(), 1500)
         }
 
-        // Функция показа парящего текста
-        function showFloat(text, x, y) {
+        // Парящий текст
+        function float(text, x, y) {
             const el = document.createElement('div')
-            el.className = 'float-text'
+            el.className = 'float'
             el.textContent = text
             el.style.left = x + 'px'
             el.style.top = (y - 30) + 'px'
@@ -856,78 +862,64 @@
         }
 
         // Обновление интерфейса
-        function updateUI() {
-            // Баланс
-            tonDisplay.textContent = tons
+        function update() {
+            tonAmount.textContent = tons
             shopBalance.textContent = tons + ' TON'
             
-            // VIP
             if (vipActive && vipExpiry && Date.now() > vipExpiry) {
                 vipActive = false
                 vipExpiry = null
             }
-            vipTag.style.display = vipActive ? 'inline-block' : 'none'
+            vipBadge.style.display = vipActive ? 'inline-block' : 'none'
             profileVip.style.display = vipActive ? 'inline-block' : 'none'
             
-            // Энергия
             energyDisplay.textContent = Math.floor(energy) + '/' + maxEnergy
             energyNumber.textContent = Math.floor(energy)
             energyProgress.style.width = (energy / maxEnergy) * 100 + '%'
             
-            // Множитель
-            let multi = 1 + Math.floor(totalTaps / 1000) * 0.1
-            if (activeBoosters.crystal && activeBoosters.crystalEnd > Date.now()) {
-                multi += 0.5
-            } else {
-                activeBoosters.crystal = false
-            }
-            if (activeBoosters.boost && activeBoosters.boostEnd > Date.now()) {
-                multi *= 3
-            } else {
-                activeBoosters.boost = false
-            }
-            if (vipActive) multi += 10
+            let mult = 1 + Math.floor(totalTaps / 1000) * 0.1
+            if (active.crystal && active.crystalEnd > Date.now()) mult += 0.5
+            else active.crystal = false
+            if (active.boost && active.boostEnd > Date.now()) mult *= 3
+            else active.boost = false
+            if (vipActive) mult += 10
             
-            multiplierDisplay.textContent = multi.toFixed(1) + 'x'
-            const tapProgress = totalTaps % 1000
-            multiplierProgress.textContent = tapProgress + '/1000'
-            multiplierBar.style.width = (tapProgress / 1000) * 100 + '%'
+            const progress = totalTaps % 1000
+            multiplierDisplay.textContent = mult.toFixed(1) + 'x'
+            multiplierProgress.textContent = progress + '/1000'
+            multiplierBar.style.width = (progress / 1000) * 100 + '%'
             
-            // Инвентарь
-            turboCount.textContent = inventory.turbo
-            crystalCount.textContent = inventory.crystal
-            boostCount.textContent = inventory.boost
+            turboCount.textContent = inv.turbo
+            crystalCount.textContent = inv.crystal
+            boostCount.textContent = inv.boost
             
-            // Профиль
             profileTaps.textContent = totalTaps
             profileEarned.textContent = totalEarned
-            profileMultiplier.textContent = multi.toFixed(1) + 'x'
+            profileMultiplier.textContent = mult.toFixed(1) + 'x'
             profileCases.textContent = casesOpened
-            totalEarnedDisplay.textContent = totalEarned + ' TON'
+            totalEarnedEl.textContent = totalEarned + ' TON'
             
-            // Активные бустеры
             let html = ''
             const now = Date.now()
-            
-            if (activeBoosters.turbo && activeBoosters.turboEnd > now) {
-                let sec = Math.floor((activeBoosters.turboEnd - now) / 1000)
-                let min = Math.floor(sec / 60)
-                let s = sec % 60
-                html += '<div class="booster-active"><span>⚡ Turbo</span><span class="booster-time">' + min + ':' + (s < 10 ? '0' + s : s) + '</span></div>'
+            if (active.turbo && active.turboEnd > now) {
+                let s = Math.floor((active.turboEnd - now) / 1000)
+                let m = Math.floor(s / 60)
+                s = s % 60
+                html += '<div class="active-booster"><span>⚡ Turbo</span><span class="booster-time">' + m + ':' + (s < 10 ? '0' + s : s) + '</span></div>'
             }
-            if (activeBoosters.crystal && activeBoosters.crystalEnd > now) {
-                let sec = Math.floor((activeBoosters.crystalEnd - now) / 1000)
-                let min = Math.floor(sec / 60)
-                let s = sec % 60
-                html += '<div class="booster-active"><span>💎 Crystal</span><span class="booster-time">' + min + ':' + (s < 10 ? '0' + s : s) + '</span></div>'
+            if (active.crystal && active.crystalEnd > now) {
+                let s = Math.floor((active.crystalEnd - now) / 1000)
+                let m = Math.floor(s / 60)
+                s = s % 60
+                html += '<div class="active-booster"><span>💎 Crystal</span><span class="booster-time">' + m + ':' + (s < 10 ? '0' + s : s) + '</span></div>'
             }
-            if (activeBoosters.boost && activeBoosters.boostEnd > now) {
-                let sec = Math.floor((activeBoosters.boostEnd - now) / 1000)
-                let min = Math.floor(sec / 60)
-                let s = sec % 60
-                html += '<div class="booster-active"><span>🚀 Boost</span><span class="booster-time">' + min + ':' + (s < 10 ? '0' + s : s) + '</span></div>'
+            if (active.boost && active.boostEnd > now) {
+                let s = Math.floor((active.boostEnd - now) / 1000)
+                let m = Math.floor(s / 60)
+                s = s % 60
+                html += '<div class="active-booster"><span>🚀 Boost</span><span class="booster-time">' + m + ':' + (s < 10 ? '0' + s : s) + '</span></div>'
             }
-            boostersActive.innerHTML = html
+            activeBoosters.innerHTML = html
         }
 
         // Тап
@@ -937,43 +929,41 @@
                 energy -= 1
                 totalTaps++
                 
-                let earned = 1
-                if (vipActive) earned += 10
-                if (activeBoosters.turbo && activeBoosters.turboEnd > Date.now()) earned *= 2
+                let earn = 1
+                if (vipActive) earn += 10
+                if (active.turbo && active.turboEnd > Date.now()) earn *= 2
                 
-                tons += earned
-                totalEarned += earned
+                tons += earn
+                totalEarned += earn
                 
                 this.style.transform = 'scale(0.95)'
                 setTimeout(() => this.style.transform = '', 100)
                 
-                showFloat('+' + earned + ' TON', e.clientX, e.clientY)
+                float('+' + earn + ' TON', e.clientX, e.clientY)
                 if (navigator.vibrate) navigator.vibrate(10)
                 
-                updateUI()
+                update()
             } else {
-                showToast('⚡ Нет энергии!', true)
+                toast('⚡ Нет энергии!', true)
             }
         })
 
         // ONLINE
-        onlineBtn.addEventListener('click', function() {
-            showToast('✅ Ты в сети!')
-        })
+        onlineBtn.addEventListener('click', () => toast('✅ Ты в сети!'))
 
-        // VIP покупка
-        vipItem.addEventListener('click', function() {
+        // VIP
+        vipItem.addEventListener('click', () => {
             if (tons >= 10000) {
                 window.location.href = 'https://t.me/fresei'
             } else {
-                showToast('❌ Недостаточно TON', true)
+                toast('❌ Недостаточно TON', true)
             }
         })
 
-        // Открытие кейса
+        // Кейс
         caseItem.addEventListener('click', function() {
             if (tons < 1000) {
-                showToast('❌ Недостаточно TON', true)
+                toast('❌ Недостаточно TON', true)
                 return
             }
             
@@ -984,43 +974,43 @@
             const items = ['⚡', '💎', '🚀', '💩']
             
             const spin = setInterval(() => {
-                slot1.textContent = items[Math.floor(Math.random() * items.length)]
-                slot2.textContent = items[Math.floor(Math.random() * items.length)]
-                slot3.textContent = items[Math.floor(Math.random() * items.length)]
-                slot1.classList.add('spin-animation')
-                slot2.classList.add('spin-animation')
-                slot3.classList.add('spin-animation')
+                slot1.textContent = items[Math.floor(Math.random() * 4)]
+                slot2.textContent = items[Math.floor(Math.random() * 4)]
+                slot3.textContent = items[Math.floor(Math.random() * 4)]
+                slot1.classList.add('spinning')
+                slot2.classList.add('spinning')
+                slot3.classList.add('spinning')
                 count++
                 
                 if (count > 20) {
                     clearInterval(spin)
-                    slot1.classList.remove('spin-animation')
-                    slot2.classList.remove('spin-animation')
-                    slot3.classList.remove('spin-animation')
+                    slot1.classList.remove('spinning')
+                    slot2.classList.remove('spinning')
+                    slot3.classList.remove('spinning')
                     
-                    const rand = Math.random()
-                    if (rand < 0.1) {
-                        inventory.turbo++
+                    const r = Math.random()
+                    if (r < 0.1) {
+                        inv.turbo++
                         slot1.textContent = slot2.textContent = slot3.textContent = '⚡'
-                        showToast('🎉 ТУРБО!')
-                    } else if (rand < 0.2) {
-                        inventory.crystal++
+                        toast('🎉 ТУРБО!')
+                    } else if (r < 0.2) {
+                        inv.crystal++
                         slot1.textContent = slot2.textContent = slot3.textContent = '💎'
-                        showToast('💎 КРИСТАЛЛ!')
-                    } else if (rand < 0.3) {
-                        inventory.boost++
+                        toast('💎 КРИСТАЛЛ!')
+                    } else if (r < 0.3) {
+                        inv.boost++
                         slot1.textContent = slot2.textContent = slot3.textContent = '🚀'
-                        showToast('🚀 БУСТ!')
+                        toast('🚀 БУСТ!')
                     } else {
                         slot1.textContent = slot2.textContent = slot3.textContent = '💩'
-                        showToast('💩 Пустышка...')
+                        toast('💩 Пустышка...')
                     }
                     
                     slot1.classList.add('win-slot')
                     slot2.classList.add('win-slot')
                     slot3.classList.add('win-slot')
                     casesOpened++
-                    updateUI()
+                    update()
                 }
             }, 100)
         })
@@ -1034,65 +1024,75 @@
         })
 
         // Использование бустеров
-        function activateBooster(type) {
+        function useBooster(type) {
             const now = Date.now()
-            const duration = 15 * 60 * 1000 // 15 минут
+            const dur = 15 * 60 * 1000
             
-            if (type === 'turbo' && inventory.turbo > 0) {
-                inventory.turbo--
-                activeBoosters.turbo = true
-                activeBoosters.turboEnd = now + duration
-                showToast('⚡ Turbo активирован на 15 мин')
+            if (type === 'turbo' && inv.turbo > 0) {
+                inv.turbo--
+                active.turbo = true
+                active.turboEnd = now + dur
+                toast('⚡ Turbo на 15 мин')
             }
-            if (type === 'crystal' && inventory.crystal > 0) {
-                inventory.crystal--
-                activeBoosters.crystal = true
-                activeBoosters.crystalEnd = now + duration
-                showToast('💎 Crystal активирован на 15 мин')
+            if (type === 'crystal' && inv.crystal > 0) {
+                inv.crystal--
+                active.crystal = true
+                active.crystalEnd = now + dur
+                toast('💎 Crystal на 15 мин')
             }
-            if (type === 'boost' && inventory.boost > 0) {
-                inventory.boost--
-                activeBoosters.boost = true
-                activeBoosters.boostEnd = now + duration
-                showToast('🚀 Boost активирован на 15 мин')
+            if (type === 'boost' && inv.boost > 0) {
+                inv.boost--
+                active.boost = true
+                active.boostEnd = now + dur
+                toast('🚀 Boost на 15 мин')
             }
-            updateUI()
+            update()
         }
 
-        useTurboBtn.addEventListener('click', () => activateBooster('turbo'))
-        useCrystalBtn.addEventListener('click', () => activateBooster('crystal'))
-        useBoostBtn.addEventListener('click', () => activateBooster('boost'))
+        useTurbo.addEventListener('click', () => useBooster('turbo'))
+        useCrystal.addEventListener('click', () => useBooster('crystal'))
+        useBoost.addEventListener('click', () => useBooster('boost'))
 
         useAllBtn.addEventListener('click', function() {
-            activateBooster('turbo')
-            activateBooster('crystal')
-            activateBooster('boost')
+            useBooster('turbo')
+            useBooster('crystal')
+            useBooster('boost')
         })
 
-        // Восстановление энергии (1 ед в 10 сек)
+        // Восстановление энергии
         setInterval(() => {
             if (energy < maxEnergy) {
                 energy = Math.min(maxEnergy, energy + 0.1)
-                updateUI()
+                update()
             }
         }, 100)
-
-        // Сохранение
-        setInterval(() => {
-            localStorage.setItem('tonGame', JSON.stringify({
-                tons, totalEarned, energy, totalTaps, casesOpened,
-                vipActive, vipExpiry, inventory, activeBoosters
-            }))
-        }, 5000)
 
         // Загрузка
         const saved = localStorage.getItem('tonGame')
         if (saved) {
             try {
-                const data = JSON.parse(saved)
-                tons = data.tons || 1000
-                totalEarned = data.totalEarned || 0
-                energy = data.energy || 2500
-                totalTaps = data.totalTaps || 0
-                casesOpened = data.casesOpened || 0
-                vipActive = data.vipActive ||
+                const d = JSON.parse(saved)
+                tons = d.tons || 1000
+                totalEarned = d.totalEarned || 0
+                energy = d.energy || 2500
+                totalTaps = d.totalTaps || 0
+                casesOpened = d.casesOpened || 0
+                vipActive = d.vipActive || false
+                vipExpiry = d.vipExpiry || null
+                inv = d.inv || { turbo: 0, crystal: 0, boost: 0 }
+                active = d.active || { turbo: false, turboEnd: 0, crystal: false, crystalEnd: 0, boost: false, boostEnd: 0 }
+            } catch (e) {}
+        }
+
+        // Сохранение
+        setInterval(() => {
+            localStorage.setItem('tonGame', JSON.stringify({
+                tons, totalEarned, energy, totalTaps, casesOpened,
+                vipActive, vipExpiry, inv, active
+            }))
+        }, 5000)
+
+        update()
+    </script>
+</body>
+</html>
