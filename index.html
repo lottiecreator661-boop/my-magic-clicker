@@ -406,7 +406,7 @@
                 <div class="relative w-[260px] h-[260px] mx-auto">
                     <svg class="progress-ring" viewBox="0 0 280 280">
                         <circle cx="140" cy="140" r="125" fill="none" stroke="#1a1a1a" stroke-width="8"/>
-                        <circle id="progressCircle" cx="140" cy="140" r="125" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" style="stroke-dasharray: 785; stroke-dashoffset: 78.5;"/>
+                        <circle id="progressCircle" cx="140" cy="140" r="125" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" style="stroke-dasharray: 785; stroke-dashoffset: 785;"/>
                     </svg>
                     
                     <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -709,7 +709,8 @@
         
         // Переключение вкладок
         document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
                 const tab = this.dataset.tab;
                 
                 document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
@@ -721,7 +722,10 @@
         });
         
         // ONLINE badge
-        onlineBadge.addEventListener('click', () => showNotification('✅ Ты в сети!'));
+        onlineBadge.addEventListener('click', (e) => {
+            e.preventDefault();
+            showNotification('✅ Ты в сети!');
+        });
         
         // Функции уведомлений
         function showNotification(message, isError = false) {
@@ -841,4 +845,4 @@
         }
         
         // Тап
-        function handleTap(e
+        function handleTap(e) {
