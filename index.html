@@ -1,63 +1,834 @@
-<div id="game-board" class="hidden fixed inset-0 bg-white z-[60] p-4">
-    <div class="flex justify-between items-center mb-6">
-        <button onclick="closeGame()" class="text-blue-500 font-bold">← Выйти</button>
-        <div class="text-center">
-            <p class="text-xs text-gray-400">Ставка</p>
-            <p id="current-bet" class="font-bold">100 mCoin</p>
-        </div>
-        <div class="w-10"></div>
-    </div>
-
-    <div class="grid grid-cols-5 gap-2" id="grid">
-        </div>
-
-    <div class="mt-8 space-y-4">
-        <button id="start-game-btn" onclick="initGame()" class="w-full bg-blue-500 text-white py-4 rounded-2xl font-bold btn-click">
-            Начать игру
-        </button>
-    </div>
-</div>
-
-<script>
-    let mines = [];
-    let gameOver = false;
-
-    function initGame() {
-        const grid = document.getElementById('grid');
-        grid.innerHTML = '';
-        mines = Array(25).fill(false);
-        // Расставляем 3 мины случайно
-        let count = 0;
-        while(count < 3) {
-            let idx = Math.floor(Math.random() * 25);
-            if(!mines[idx]) { mines[idx] = true; count++; }
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TON TAP | ELITE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
         
-        gameOver = false;
-        for(let i=0; i<25; i++) {
-            const cell = document.createElement('div');
-            cell.className = "h-14 bg-gray-200 rounded-xl flex items-center justify-center text-xl cursor-pointer btn-click";
-            cell.onclick = () => checkCell(cell, i);
-            grid.appendChild(cell);
+        body {
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        document.getElementById('start-game-btn').innerText = "Игра идет...";
-    }
-
-    function checkCell(cell, idx) {
-        if(gameOver) return;
-        if(mines[idx]) {
-            cell.className = "h-14 bg-red-500 rounded-xl flex items-center justify-center text-white";
-            cell.innerHTML = "💣";
-            alert("БУМ! Вы проиграли.");
-            gameOver = true;
-            document.getElementById('start-game-btn').innerText = "Попробовать снова";
-        } else {
-            cell.className = "h-14 bg-green-500 rounded-xl flex items-center justify-center text-white";
-            cell.innerHTML = "💎";
-            // Тут можно добавить логику увеличения множителя
+        
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            height: 750px;
+            background: #000000;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-radius: 32px;
+            border: 1px solid #1a1a1a;
         }
-    }
+        
+        .glass {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid #1a1a1a;
+        }
+        
+        .crystal-button {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a1a1a, #000000);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            margin: 0 auto;
+            border: 1px solid #333;
+        }
+        
+        .crystal-button:active {
+            transform: scale(0.95);
+        }
+        
+        .crystal-inner {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #222;
+        }
+        
+        .progress-ring {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            transform: rotate(-90deg);
+        }
+        
+        .stat-card {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 24px;
+            padding: 16px;
+        }
+        
+        /* ONLINE badge */
+        .online-badge {
+            background: #0a0a0a;
+            padding: 8px 16px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid #22c55e;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+        }
+        
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        /* Активные бустеры */
+        .active-boosters {
+            position: fixed;
+            top: 80px;
+            right: 16px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .active-booster {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 30px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        
+        .booster-timer {
+            font-size: 12px;
+            color: #22c55e;
+            font-weight: 600;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Нижнее меню */
+        .bottom-menu {
+            background: #000000;
+            border-top: 1px solid #1a1a1a;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-around;
+            position: sticky;
+            bottom: 0;
+            width: 100%;
+            z-index: 50;
+        }
+        
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #333;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
+        .menu-item:active {
+            background: #0a0a0a;
+            transform: scale(0.95);
+        }
+        
+        .menu-item.active {
+            color: #ffffff;
+        }
+        
+        .menu-item span {
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Магазин */
+        .shop-item {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .shop-item:active {
+            transform: scale(0.98);
+            border-color: #333;
+        }
+        
+        .shop-item.elite {
+            border: 2px solid gold;
+            background: linear-gradient(145deg, #0a0a0a, #1a1a0a);
+        }
+        
+        .price-tag {
+            background: #1a1a1a;
+            padding: 4px 12px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* VIP рамка */
+        .vip-badge {
+            background: linear-gradient(135deg, gold, #b8860b);
+            padding: 4px 12px;
+            border-radius: 40px;
+            color: black;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        
+        /* Инвентарь */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .inventory-item {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 8px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .inventory-item:active {
+            background: #1a1a1a;
+        }
+        
+        .inventory-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ffffff;
+            color: #000000;
+            border-radius: 20px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        /* Рулетка */
+        .roulette-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .roulette-container {
+            width: 320px;
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 40px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .roulette-items {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .roulette-item {
+            background: #000000;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 20px 5px;
+            font-size: 32px;
+            transition: all 0.1s;
+        }
+        
+        .roulette-item.spinning {
+            animation: spinItem 0.1s infinite;
+        }
+        
+        .roulette-item.win {
+            border-color: gold;
+            box-shadow: 0 0 30px gold;
+        }
+        
+        @keyframes spinItem {
+            0% { transform: translateY(0); }
+            25% { transform: translateY(-10px); }
+            75% { transform: translateY(10px); }
+            100% { transform: translateY(0); }
+        }
+        
+        /* Прогресс бары */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #ffffff;
+            transition: width 0.3s;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000000;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 40px;
+            border: 2px solid;
+            font-weight: bold;
+            z-index: 10000;
+            animation: fadeInOut 1.5s ease forwards;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        
+        /* Анимация для флоатинга */
+        .floating-item {
+            position: fixed;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 24px;
+            pointer-events: none;
+            z-index: 9999;
+            animation: floatUp 1s ease-out forwards;
+        }
+        
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        
+        <!-- Шапка -->
+        <div class="sticky top-0 z-40 glass px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">₿</span>
+                    </div>
+                    <div>
+                        <div class="text-[#333] text-xs">Баланс TON</div>
+                        <div class="flex items-center">
+                            <span class="text-white font-bold text-2xl" id="tonBalance">1000</span>
+                            <span class="vip-badge" id="vipBadge" style="display: none;">VIP ELITE</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="online-badge" onclick="showNotification('✅ Ты в сети!')">
+                    <div class="online-dot"></div>
+                    <span class="text-white text-sm font-medium">ONLINE</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Активные бустеры -->
+        <div class="active-boosters" id="activeBoosters"></div>
+        
+        <!-- HOME TAB -->
+        <div id="homeTab" class="active-tab">
+            <!-- Центр с кнопкой -->
+            <div class="relative py-6">
+                <div class="relative w-[260px] h-[260px] mx-auto">
+                    <svg class="progress-ring" viewBox="0 0 280 280">
+                        <circle cx="140" cy="140" r="125" fill="none" stroke="#1a1a1a" stroke-width="8"/>
+                        <circle id="progressCircle" cx="140" cy="140" r="125" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" style="stroke-dasharray: 785; stroke-dashoffset: 78.5;"/>
+                    </svg>
+                    
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <div class="crystal-button" id="tapButton">
+                            <div class="crystal-inner">
+                                <svg class="w-20 h-20 mb-2 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="1" fill="none"/>
+                                    <path d="M2 17L12 22L22 17" stroke="white" stroke-width="1" fill="none"/>
+                                    <path d="M2 12L12 17L22 12" stroke="white" stroke-width="1" fill="none"/>
+                                </svg>
+                                <span class="text-white font-bold text-2xl">TAP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <span class="text-[#333] text-sm">⚡ Энергия</span>
+                    <span class="text-white font-bold text-lg ml-2" id="energyDisplay">2500/2500</span>
+                </div>
+            </div>
+            
+            <!-- Карточки -->
+            <div class="px-4 grid grid-cols-2 gap-4 mb-4">
+                <div class="stat-card">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl text-white">⚡</span>
+                        <span class="text-[#333] text-sm">Energy</span>
+                    </div>
+                    <div class="text-white font-bold text-2xl" id="energyValue">2500</div>
+                    <div class="text-[#333] text-xs mt-1">/ 2500</div>
+                    <div class="progress-bar mt-4">
+                        <div class="progress-fill" id="energyBar" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl text-white">🚀</span>
+                        <span class="text-[#333] text-sm">Multiplier</span>
+                    </div>
+                    <div class="text-white font-bold text-2xl" id="multiplierValue">1.0x</div>
+                    <div class="text-[#333] text-xs mt-1" id="multiplierDesc">0/1000 тапов</div>
+                    <div class="progress-bar mt-4">
+                        <div class="progress-fill" id="multiplierBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Доп инфа -->
+            <div class="px-4">
+                <div class="stat-card p-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-[#333]">Заработано всего:</span>
+                        <span class="text-white font-bold" id="totalEarned">0 TON</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SHOP TAB -->
+        <div id="shopTab" style="display: none;">
+            <div class="p-4">
+                <!-- Баланс -->
+                <div class="stat-card mb-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-white font-semibold">💰 Твой баланс</span>
+                        <span class="text-white font-bold text-xl" id="shopBalance">1000 TON</span>
+                    </div>
+                </div>
+                
+                <!-- VIP ELITE -->
+                <div class="shop-item elite" onclick="buyVIP()">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-white font-bold text-xl">👑 VIP ELITE</span>
+                        <span class="price-tag">10,000 TON</span>
+                    </div>
+                    <p class="text-[#333] text-sm mb-3">✨ +10 TON за каждый тап</p>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="text-[#333]">Длительность:</span>
+                        <span class="text-white">30 дней</span>
+                    </div>
+                </div>
+                
+                <!-- Бустер пак -->
+                <div class="shop-item" onclick="openCase()">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-white font-bold text-xl">🎲 Бустер пак</span>
+                        <span class="price-tag">1,000 TON</span>
+                    </div>
+                    <p class="text-[#333] text-sm mb-3">⚡ Турбо 10% | 💎 Кристалл 10% | 🚀 Буст 10% | 💩 Пустышка 70%</p>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="text-[#333]">Длительность бустеров:</span>
+                        <span class="text-white">15 минут</span>
+                    </div>
+                </div>
+                
+                <!-- Инвентарь -->
+                <div class="stat-card mt-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-white font-semibold">📦 Инвентарь</span>
+                        <span class="text-[#333] text-sm" onclick="useAllBoosters()" style="cursor: pointer;">Использовать все</span>
+                    </div>
+                    <div class="inventory-grid">
+                        <div class="inventory-item" onclick="useBooster('turbo')">
+                            <span class="text-2xl">⚡</span>
+                            <div class="text-white text-xs mt-1">Turbo</div>
+                            <span class="inventory-count" id="turboCount">0</span>
+                        </div>
+                        <div class="inventory-item" onclick="useBooster('crystal')">
+                            <span class="text-2xl">💎</span>
+                            <div class="text-white text-xs mt-1">Crystal</div>
+                            <span class="inventory-count" id="crystalCount">0</span>
+                        </div>
+                        <div class="inventory-item" onclick="useBooster('boost')">
+                            <span class="text-2xl">🚀</span>
+                            <div class="text-white text-xs mt-1">Boost</div>
+                            <span class="inventory-count" id="boostCount">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PROFILE TAB -->
+        <div id="profileTab" style="display: none;">
+            <div class="p-4">
+                <!-- Профиль -->
+                <div class="stat-card mb-4 text-center p-6">
+                    <div class="w-20 h-20 rounded-full bg-[#1a1a1a] mx-auto mb-3 flex items-center justify-center">
+                        <span class="text-4xl">👤</span>
+                    </div>
+                    <div class="text-white font-bold text-xl mb-1">Игрок</div>
+                    <div class="text-[#333] text-sm">ID: TON-12345</div>
+                    
+                    <!-- VIP статус -->
+                    <div id="profileVIP" class="mt-3 p-2 rounded-full" style="display: none;">
+                        <span class="text-gold font-bold">👑 VIP ELITE активен</span>
+                    </div>
+                </div>
+                
+                <!-- Статистика -->
+                <div class="stat-card mb-4">
+                    <h3 class="text-white font-bold mb-3">📊 Статистика</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-[#333]">Всего тапов:</span>
+                            <span class="text-white font-bold" id="profileTaps">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#333]">Заработано TON:</span>
+                            <span class="text-white font-bold" id="profileEarned">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#333]">Множитель:</span>
+                            <span class="text-white font-bold" id="profileMultiplier">1.0x</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#333]">Открыто кейсов:</span>
+                            <span class="text-white font-bold" id="profileCases">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Достижения -->
+                <div class="stat-card">
+                    <h3 class="text-white font-bold mb-3">🏆 Достижения</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">⚡</span>
+                            <div>
+                                <div class="text-white text-sm">Новичок</div>
+                                <div class="text-[#333] text-xs">1000 тапов</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- GAME TAB (скоро) -->
+        <div id="gameTab" style="display: none;">
+            <div class="p-4">
+                <div class="stat-card text-center p-8">
+                    <span class="text-6xl mb-4 block">🎮</span>
+                    <h3 class="text-white font-bold text-2xl mb-2">Скоро!</h3>
+                    <p class="text-[#333]">Игры появятся в следующем обновлении</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Нижнее меню -->
+        <div class="bottom-menu">
+            <div class="menu-item active" onclick="switchTab('home')">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 3L4 9v12h16V9l-8-6z"/>
+                </svg>
+                <span>Home</span>
+            </div>
+            <div class="menu-item" onclick="switchTab('shop')">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+                <span>Shop</span>
+            </div>
+            <div class="menu-item" onclick="switchTab('profile')">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <span>Profile</span>
+            </div>
+            <div class="menu-item" onclick="switchTab('game')">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/>
+                </svg>
+                <span>Game</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Рулетка -->
+    <div class="roulette-overlay" id="rouletteOverlay" onclick="closeRoulette(event)">
+        <div class="roulette-container" onclick="event.stopPropagation()">
+            <h3 class="text-white font-bold text-2xl mb-2">🎲 Открытие кейса</h3>
+            <div class="roulette-items" id="rouletteItems">
+                <div class="roulette-item" id="slot1">⚡</div>
+                <div class="roulette-item" id="slot2">💎</div>
+                <div class="roulette-item" id="slot3">🚀</div>
+            </div>
+            <button class="w-full bg-white text-black font-bold py-3 rounded-full mt-4" onclick="closeRoulette(event)">Закрыть</button>
+        </div>
+    </div>
 
-    function openGame() { document.getElementById('game-board').classList.remove('hidden'); }
-    function closeGame() { document.getElementById('game-board').classList.add('hidden'); }
-</script>
+    <script>
+        // Состояние игры
+        let tons = 1000;
+        let totalEarned = 0;
+        let energy = 2500;
+        const maxEnergy = 2500;
+        let totalTaps = 0;
+        let casesOpened = 0;
+        let multiplier = 1.0;
+        
+        // VIP Elite
+        let vipActive = false;
+        let vipExpiry = null;
+        
+        // Инвентарь
+        let inventory = {
+            turbo: 0,
+            crystal: 0,
+            boost: 0
+        };
+        
+        // Активные бустеры с таймерами
+        let activeBoosters = {
+            turbo: { active: false, endTime: null },
+            crystal: { active: false, endTime: null },
+            boost: { active: false, endTime: null }
+        };
+        
+        // Элементы
+        const tonBalance = document.getElementById('tonBalance');
+        const shopBalance = document.getElementById('shopBalance');
+        const vipBadge = document.getElementById('vipBadge');
+        const profileVIP = document.getElementById('profileVIP');
+        const energyDisplay = document.getElementById('energyDisplay');
+        const energyValue = document.getElementById('energyValue');
+        const energyBar = document.getElementById('energyBar');
+        const progressCircle = document.getElementById('progressCircle');
+        const multiplierValue = document.getElementById('multiplierValue');
+        const multiplierDesc = document.getElementById('multiplierDesc');
+        const multiplierBar = document.getElementById('multiplierBar');
+        const totalEarnedEl = document.getElementById('totalEarned');
+        
+        // Профиль элементы
+        const profileTaps = document.getElementById('profileTaps');
+        const profileEarned = document.getElementById('profileEarned');
+        const profileMultiplier = document.getElementById('profileMultiplier');
+        const profileCases = document.getElementById('profileCases');
+        
+        // Инвентарь элементы
+        const turboCount = document.getElementById('turboCount');
+        const crystalCount = document.getElementById('crystalCount');
+        const boostCount = document.getElementById('boostCount');
+        
+        // Активные бустеры контейнер
+        const activeBoostersDiv = document.getElementById('activeBoosters');
+        
+        // Рулетка
+        const rouletteOverlay = document.getElementById('rouletteOverlay');
+        const slot1 = document.getElementById('slot1');
+        const slot2 = document.getElementById('slot2');
+        const slot3 = document.getElementById('slot3');
+        
+        // Аудио контекст
+        let audioCtx = null;
+        
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx) return;
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            switch(type) {
+                case 'spin':
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.2);
+                    break;
+                    
+                case 'win':
+                    oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                    break;
+                    
+                case 'lose':
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 0.2);
+                    break;
+            }
+        }
+        
+        function updateUI() {
+            // Баланс
+            tonBalance.textContent = tons;
+            shopBalance.textContent = tons + ' TON';
+            
+            // VIP статус
+            if (vipActive) {
+                vipBadge.style.display = 'inline-block';
+                profileVIP.style.display = 'block';
+                
+                // Проверка истечения
+                if (vipExpiry && Date.now() > vipExpiry) {
+                    vipActive = false;
+                    vipExpiry = null;
+                    vipBadge.style.display = 'none';
+                    profileVIP.style.display = 'none';
+                    showNotification('👑 VIP Elite истек');
+                }
+            } else {
+                vipBadge.style.display = 'none';
+                profileVIP.style.display = 'none';
+            }
+            
+            // Энергия
+            const energyPercent = (energy / maxEnergy) * 100;
+            energyDisplay.textContent = `${Math.floor(energy)}/${maxEnergy}`;
+            energyValue.textContent = Math.floor(energy);
+            energyBar.style.width = `${energyPercent}%`;
+            
+            // Прогресс кольцо
+            const circumference = 785;
+            const offset = circumference * (1 - energy / maxEnergy);
+            progressCircle.style.strokeDashoffset = offset;
+            
+            // Мультиплеер
+            const baseMultiplier = 1.0 + Math.floor(totalTaps / 1000) * 0.1;
+            multiplier = baseMultiplier;
+            
+            if (activeBoosters.crystal.active) multiplier += 0.5;
+            if (activeBoosters.boost.active) multiplier *= 3;
+            if (vipActive) multiplier += 10; // +10 за тап для VIP
+            
+            const tapsProgress = totalTaps % 1000;
+            multiplierValue.textContent = multiplier.toFixed(1) + 'x';
+            multiplierDesc.textContent = `${tapsProgress}/1000 тапов`;
+            multiplierBar.style.width = `${(tapsProgress / 1000) * 100}%`;
+            
+            // Инвентарь
+            turboCount.textContent = inventory.turbo;
+            crystalCount.textContent = inventory.crystal;
+            boostCount.textContent = inventory.boost;
+            
+            // Профиль
+            profileTaps.textContent = totalTaps;
+            profileEarned.textContent = totalEarned + ' TON';
+            profileMultiplier.textContent = multiplier.toFixed(1) + 'x';
+            profileCases.textContent = casesOpened;
+            
+            totalEarnedEl.textContent = totalEarned + ' TON';
+            
+            // Обновление активных бустеров
+            updateActiveBoostersDisplay();
+        }
+        
+        function updateActiveBoostersDisplay() {
+            let html = '';
+            const now = Date.now();
+            
+            if (activeBoosters.turbo.active && activeBoosters.turbo.endTime > now) {
+                const secs = Math.floor((activeBoosters.turbo.endTime - now) / 1000);
+                const mins = Math.floor(secs / 60);
+                const remainingSecs = secs % 60;
+                html += `<div class="active-booster"><span>⚡ Turbo</span><span class="booster-timer">${mins}:${remainingSecs.toString().padStart(2,'0')}</span></div>`;
+            }
+            
+            if (activeBoosters.crystal.active && activeBoosters.crystal.endTime > now) {
+                const secs = Math.floor((activeBoosters.crystal.endTime - now) / 1000);
+                const mins = Math.floor(secs / 60);
+                const remainingSecs = secs % 60;
+                html += `<div class="active-booster"><span>💎 Crystal</span><span class="booster-timer">${mins}:${remainingSecs.toString().padStart(2,'0')}</span></div>`;
+            }
