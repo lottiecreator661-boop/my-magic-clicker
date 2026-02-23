@@ -90,7 +90,6 @@
             padding: 16px;
         }
         
-        /* ONLINE badge */
         .online-badge {
             background: #0a0a0a;
             padding: 8px 16px;
@@ -116,9 +115,8 @@
             50% { opacity: 0.5; transform: scale(1.2); }
         }
         
-        /* Активные бустеры */
         .active-boosters {
-            position: fixed;
+            position: absolute;
             top: 80px;
             right: 16px;
             z-index: 100;
@@ -150,7 +148,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        /* Нижнее меню */
         .bottom-menu {
             background: #000000;
             border-top: 1px solid #1a1a1a;
@@ -188,7 +185,6 @@
             font-weight: 600;
         }
         
-        /* Магазин */
         .shop-item {
             background: #0a0a0a;
             border: 1px solid #1a1a1a;
@@ -217,7 +213,6 @@
             font-weight: bold;
         }
         
-        /* VIP рамка */
         .vip-badge {
             background: linear-gradient(135deg, gold, #b8860b);
             padding: 4px 12px;
@@ -228,7 +223,6 @@
             margin-left: 8px;
         }
         
-        /* Инвентарь */
         .inventory-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -262,7 +256,6 @@
             font-weight: bold;
         }
         
-        /* Рулетка */
         .roulette-overlay {
             position: fixed;
             top: 0;
@@ -317,7 +310,6 @@
             100% { transform: translateY(0); }
         }
         
-        /* Прогресс бары */
         .progress-bar {
             width: 100%;
             height: 4px;
@@ -332,7 +324,6 @@
             transition: width 0.3s;
         }
         
-        /* Уведомления */
         .notification {
             position: fixed;
             bottom: 100px;
@@ -346,6 +337,7 @@
             font-weight: bold;
             z-index: 10000;
             animation: fadeInOut 1.5s ease forwards;
+            pointer-events: none;
         }
         
         @keyframes fadeInOut {
@@ -355,7 +347,6 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
         
-        /* Анимация для флоатинга */
         .floating-item {
             position: fixed;
             color: #ffffff;
@@ -369,6 +360,14 @@
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
         }
     </style>
 </head>
@@ -390,7 +389,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="online-badge" onclick="showNotification('✅ Ты в сети!')">
+                <div class="online-badge" id="onlineBadge">
                     <div class="online-dot"></div>
                     <span class="text-white text-sm font-medium">ONLINE</span>
                 </div>
@@ -401,7 +400,7 @@
         <div class="active-boosters" id="activeBoosters"></div>
         
         <!-- HOME TAB -->
-        <div id="homeTab" class="active-tab">
+        <div id="homeTab" class="tab-pane active">
             <!-- Центр с кнопкой -->
             <div class="relative py-6">
                 <div class="relative w-[260px] h-[260px] mx-auto">
@@ -469,7 +468,7 @@
         </div>
         
         <!-- SHOP TAB -->
-        <div id="shopTab" style="display: none;">
+        <div id="shopTab" class="tab-pane">
             <div class="p-4">
                 <!-- Баланс -->
                 <div class="stat-card mb-4">
@@ -480,7 +479,7 @@
                 </div>
                 
                 <!-- VIP ELITE -->
-                <div class="shop-item elite" onclick="buyVIP()">
+                <div class="shop-item elite" id="vipShopItem">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-white font-bold text-xl">👑 VIP ELITE</span>
                         <span class="price-tag">10,000 TON</span>
@@ -493,7 +492,7 @@
                 </div>
                 
                 <!-- Бустер пак -->
-                <div class="shop-item" onclick="openCase()">
+                <div class="shop-item" id="caseItem">
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-white font-bold text-xl">🎲 Бустер пак</span>
                         <span class="price-tag">1,000 TON</span>
@@ -509,20 +508,20 @@
                 <div class="stat-card mt-4">
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-white font-semibold">📦 Инвентарь</span>
-                        <span class="text-[#333] text-sm" onclick="useAllBoosters()" style="cursor: pointer;">Использовать все</span>
+                        <span class="text-[#333] text-sm" id="useAllBoosters" style="cursor: pointer;">Использовать все</span>
                     </div>
                     <div class="inventory-grid">
-                        <div class="inventory-item" onclick="useBooster('turbo')">
+                        <div class="inventory-item" id="useTurbo">
                             <span class="text-2xl">⚡</span>
                             <div class="text-white text-xs mt-1">Turbo</div>
                             <span class="inventory-count" id="turboCount">0</span>
                         </div>
-                        <div class="inventory-item" onclick="useBooster('crystal')">
+                        <div class="inventory-item" id="useCrystal">
                             <span class="text-2xl">💎</span>
                             <div class="text-white text-xs mt-1">Crystal</div>
                             <span class="inventory-count" id="crystalCount">0</span>
                         </div>
-                        <div class="inventory-item" onclick="useBooster('boost')">
+                        <div class="inventory-item" id="useBoost">
                             <span class="text-2xl">🚀</span>
                             <div class="text-white text-xs mt-1">Boost</div>
                             <span class="inventory-count" id="boostCount">0</span>
@@ -533,7 +532,7 @@
         </div>
         
         <!-- PROFILE TAB -->
-        <div id="profileTab" style="display: none;">
+        <div id="profileTab" class="tab-pane">
             <div class="p-4">
                 <!-- Профиль -->
                 <div class="stat-card mb-4 text-center p-6">
@@ -544,7 +543,7 @@
                     <div class="text-[#333] text-sm">ID: TON-12345</div>
                     
                     <!-- VIP статус -->
-                    <div id="profileVIP" class="mt-3 p-2 rounded-full" style="display: none;">
+                    <div id="profileVIP" class="mt-3 p-2 rounded-full" style="display: none; border: 1px solid gold;">
                         <span class="text-gold font-bold">👑 VIP ELITE активен</span>
                     </div>
                 </div>
@@ -589,7 +588,7 @@
         </div>
         
         <!-- GAME TAB (скоро) -->
-        <div id="gameTab" style="display: none;">
+        <div id="gameTab" class="tab-pane">
             <div class="p-4">
                 <div class="stat-card text-center p-8">
                     <span class="text-6xl mb-4 block">🎮</span>
@@ -601,25 +600,25 @@
         
         <!-- Нижнее меню -->
         <div class="bottom-menu">
-            <div class="menu-item active" onclick="switchTab('home')">
+            <div class="menu-item active" data-tab="home">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 3L4 9v12h16V9l-8-6z"/>
                 </svg>
                 <span>Home</span>
             </div>
-            <div class="menu-item" onclick="switchTab('shop')">
+            <div class="menu-item" data-tab="shop">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
                 </svg>
                 <span>Shop</span>
             </div>
-            <div class="menu-item" onclick="switchTab('profile')">
+            <div class="menu-item" data-tab="profile">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                 </svg>
                 <span>Profile</span>
             </div>
-            <div class="menu-item" onclick="switchTab('game')">
+            <div class="menu-item" data-tab="game">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/>
                 </svg>
@@ -629,15 +628,15 @@
     </div>
     
     <!-- Рулетка -->
-    <div class="roulette-overlay" id="rouletteOverlay" onclick="closeRoulette(event)">
-        <div class="roulette-container" onclick="event.stopPropagation()">
+    <div class="roulette-overlay" id="rouletteOverlay">
+        <div class="roulette-container">
             <h3 class="text-white font-bold text-2xl mb-2">🎲 Открытие кейса</h3>
             <div class="roulette-items" id="rouletteItems">
                 <div class="roulette-item" id="slot1">⚡</div>
                 <div class="roulette-item" id="slot2">💎</div>
                 <div class="roulette-item" id="slot3">🚀</div>
             </div>
-            <button class="w-full bg-white text-black font-bold py-3 rounded-full mt-4" onclick="closeRoulette(event)">Закрыть</button>
+            <button class="w-full bg-white text-black font-bold py-3 rounded-full mt-4" id="closeRoulette">Закрыть</button>
         </div>
     </div>
 
@@ -649,7 +648,6 @@
         const maxEnergy = 2500;
         let totalTaps = 0;
         let casesOpened = 0;
-        let multiplier = 1.0;
         
         // VIP Elite
         let vipActive = false;
@@ -662,14 +660,14 @@
             boost: 0
         };
         
-        // Активные бустеры с таймерами
+        // Активные бустеры
         let activeBoosters = {
-            turbo: { active: false, endTime: null },
-            crystal: { active: false, endTime: null },
-            boost: { active: false, endTime: null }
+            turbo: { active: false, endTime: 0 },
+            crystal: { active: false, endTime: 0 },
+            boost: { active: false, endTime: 0 }
         };
         
-        // Элементы
+        // DOM элементы
         const tonBalance = document.getElementById('tonBalance');
         const shopBalance = document.getElementById('shopBalance');
         const vipBadge = document.getElementById('vipBadge');
@@ -683,96 +681,83 @@
         const multiplierBar = document.getElementById('multiplierBar');
         const totalEarnedEl = document.getElementById('totalEarned');
         
-        // Профиль элементы
         const profileTaps = document.getElementById('profileTaps');
         const profileEarned = document.getElementById('profileEarned');
         const profileMultiplier = document.getElementById('profileMultiplier');
         const profileCases = document.getElementById('profileCases');
         
-        // Инвентарь элементы
         const turboCount = document.getElementById('turboCount');
         const crystalCount = document.getElementById('crystalCount');
         const boostCount = document.getElementById('boostCount');
         
-        // Активные бустеры контейнер
         const activeBoostersDiv = document.getElementById('activeBoosters');
         
-        // Рулетка
         const rouletteOverlay = document.getElementById('rouletteOverlay');
         const slot1 = document.getElementById('slot1');
         const slot2 = document.getElementById('slot2');
         const slot3 = document.getElementById('slot3');
+        const closeRouletteBtn = document.getElementById('closeRoulette');
         
-        // Аудио контекст
-        let audioCtx = null;
+        const tapButton = document.getElementById('tapButton');
+        const onlineBadge = document.getElementById('onlineBadge');
+        const vipShopItem = document.getElementById('vipShopItem');
+        const caseItem = document.getElementById('caseItem');
+        const useAllBoosters = document.getElementById('useAllBoosters');
+        const useTurbo = document.getElementById('useTurbo');
+        const useCrystal = document.getElementById('useCrystal');
+        const useBoost = document.getElementById('useBoost');
         
-        function initAudio() {
-            if (audioCtx) return;
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Переключение вкладок
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const tab = this.dataset.tab;
+                
+                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                document.getElementById(tab + 'Tab').classList.add('active');
+            });
+        });
+        
+        // ONLINE badge
+        onlineBadge.addEventListener('click', () => showNotification('✅ Ты в сети!'));
+        
+        // Функции уведомлений
+        function showNotification(message, isError = false) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = message;
+            notif.style.borderColor = isError ? '#ef4444' : '#22c55e';
+            document.body.appendChild(notif);
+            
+            setTimeout(() => notif.remove(), 1500);
         }
         
-        function playSound(type) {
-            initAudio();
-            if (!audioCtx) return;
-            
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            switch(type) {
-                case 'spin':
-                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    oscillator.start();
-                    oscillator.stop(audioCtx.currentTime + 0.2);
-                    break;
-                    
-                case 'win':
-                    oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    oscillator.start();
-                    oscillator.stop(audioCtx.currentTime + 0.3);
-                    break;
-                    
-                case 'lose':
-                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    oscillator.start();
-                    oscillator.stop(audioCtx.currentTime + 0.2);
-                    break;
-            }
+        function showFloatingText(text, x, y) {
+            const div = document.createElement('div');
+            div.className = 'floating-item';
+            div.textContent = text;
+            div.style.left = x + 'px';
+            div.style.top = (y - 30) + 'px';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 1000);
         }
         
+        // Обновление интерфейса
         function updateUI() {
             // Баланс
             tonBalance.textContent = tons;
             shopBalance.textContent = tons + ' TON';
             
             // VIP статус
-            if (vipActive) {
-                vipBadge.style.display = 'inline-block';
-                profileVIP.style.display = 'block';
-                
-                // Проверка истечения
-                if (vipExpiry && Date.now() > vipExpiry) {
-                    vipActive = false;
-                    vipExpiry = null;
-                    vipBadge.style.display = 'none';
-                    profileVIP.style.display = 'none';
-                    showNotification('👑 VIP Elite истек');
-                }
-            } else {
-                vipBadge.style.display = 'none';
-                profileVIP.style.display = 'none';
+            if (vipActive && vipExpiry && Date.now() > vipExpiry) {
+                vipActive = false;
+                vipExpiry = null;
             }
+            
+            vipBadge.style.display = vipActive ? 'inline-block' : 'none';
+            profileVIP.style.display = vipActive ? 'block' : 'none';
             
             // Энергия
             const energyPercent = (energy / maxEnergy) * 100;
@@ -786,15 +771,27 @@
             progressCircle.style.strokeDashoffset = offset;
             
             // Мультиплеер
-            const baseMultiplier = 1.0 + Math.floor(totalTaps / 1000) * 0.1;
-            multiplier = baseMultiplier;
+            let baseMultiplier = 1.0 + Math.floor(totalTaps / 1000) * 0.1;
+            let currentMultiplier = baseMultiplier;
             
-            if (activeBoosters.crystal.active) multiplier += 0.5;
-            if (activeBoosters.boost.active) multiplier *= 3;
-            if (vipActive) multiplier += 10; // +10 за тап для VIP
+            if (activeBoosters.crystal.active && activeBoosters.crystal.endTime > Date.now()) {
+                currentMultiplier += 0.5;
+            } else {
+                activeBoosters.crystal.active = false;
+            }
+            
+            if (activeBoosters.boost.active && activeBoosters.boost.endTime > Date.now()) {
+                currentMultiplier *= 3;
+            } else {
+                activeBoosters.boost.active = false;
+            }
+            
+            if (vipActive) {
+                currentMultiplier += 10;
+            }
             
             const tapsProgress = totalTaps % 1000;
-            multiplierValue.textContent = multiplier.toFixed(1) + 'x';
+            multiplierValue.textContent = currentMultiplier.toFixed(1) + 'x';
             multiplierDesc.textContent = `${tapsProgress}/1000 тапов`;
             multiplierBar.style.width = `${(tapsProgress / 1000) * 100}%`;
             
@@ -806,12 +803,12 @@
             // Профиль
             profileTaps.textContent = totalTaps;
             profileEarned.textContent = totalEarned + ' TON';
-            profileMultiplier.textContent = multiplier.toFixed(1) + 'x';
+            profileMultiplier.textContent = currentMultiplier.toFixed(1) + 'x';
             profileCases.textContent = casesOpened;
             
             totalEarnedEl.textContent = totalEarned + ' TON';
             
-            // Обновление активных бустеров
+            // Активные бустеры
             updateActiveBoostersDisplay();
         }
         
@@ -832,3 +829,16 @@
                 const remainingSecs = secs % 60;
                 html += `<div class="active-booster"><span>💎 Crystal</span><span class="booster-timer">${mins}:${remainingSecs.toString().padStart(2,'0')}</span></div>`;
             }
+            
+            if (activeBoosters.boost.active && activeBoosters.boost.endTime > now) {
+                const secs = Math.floor((activeBoosters.boost.endTime - now) / 1000);
+                const mins = Math.floor(secs / 60);
+                const remainingSecs = secs % 60;
+                html += `<div class="active-booster"><span>🚀 Boost</span><span class="booster-timer">${mins}:${remainingSecs.toString().padStart(2,'0')}</span></div>`;
+            }
+            
+            activeBoostersDiv.innerHTML = html;
+        }
+        
+        // Тап
+        function handleTap(e
