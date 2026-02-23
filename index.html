@@ -3,1111 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TON MINES</title>
+    <title>TON TAP - Mines & Admin</title>
     <style>
+        /* БАЗОВЫЕ СТИЛИ */
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        body {
-            background: black;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
-            margin: 0;
-        }
+        body { background: black; min-height: 100vh; display: flex; justify-content: center; align-items: center; color: white; }
 
         .app {
-            width: 100%;
-            max-width: 400px;
-            height: 100vh;
-            max-height: 750px;
-            background: black;
-            border: 1px solid #222;
-            border-radius: 30px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Шапка */
-        .header {
-            padding: 12px 15px;
-            border-bottom: 1px solid #222;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: black;
-        }
-
-        .balance {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .balance-icon {
-            width: 36px;
-            height: 36px;
-            background: #111;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: white;
-        }
-
-        .balance-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .balance-label {
-            color: #666;
-            font-size: 10px;
-        }
-
-        .balance-row {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .balance-amount {
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .vip-badge {
-            background: gold;
-            color: black;
-            font-size: 8px;
-            padding: 2px 6px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-
-        .admin-badge {
-            background: #ff4444;
-            color: white;
-            font-size: 8px;
-            padding: 2px 6px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-
-        .online {
-            background: #111;
-            border: 2px solid #22c55e;
-            border-radius: 30px;
-            padding: 6px 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-        }
-
-        .online-dot {
-            width: 6px;
-            height: 6px;
-            background: #22c55e;
-            border-radius: 50%;
-        }
-
-        .online-text {
-            color: white;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* Нижнее меню */
-        .bottom-menu {
-            background: black;
-            border-top: 1px solid #222;
-            padding: 8px 15px;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .menu-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            color: #444;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .menu-item.active {
-            color: white;
-        }
-
-        .menu-icon {
-            width: 22px;
-            height: 22px;
-            fill: currentColor;
-        }
-
-        .menu-text {
-            font-size: 10px;
-            font-weight: 600;
-        }
-
-        /* Контент */
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            background: black;
-        }
-
-        /* Алмазная кнопка */
-        .diamond-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 10px 0 20px;
-        }
-
-        .diamond-btn {
-            width: 200px;
-            height: 200px;
-            background: #111;
-            border: 2px solid #333;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        .diamond-btn:active {
-            transform: scale(0.95);
-            background: #1a1a1a;
-        }
-
-        .diamond-icon {
-            font-size: 70px;
-            color: white;
-        }
-
-        .diamond-text {
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .energy-info {
-            color: #666;
-            font-size: 13px;
-        }
-
-        .energy-value {
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            margin-left: 5px;
-        }
-
-        /* Карточки */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .card {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 20px;
-            padding: 12px;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #666;
-            font-size: 12px;
-            margin-bottom: 8px;
-        }
-
-        .card-number {
-            color: white;
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .card-max {
-            color: #666;
-            font-size: 11px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #222;
-            border-radius: 10px;
-            margin-top: 8px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: white;
-            border-radius: 10px;
-        }
-
-        /* Инфо строка */
-        .info-row {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 20px;
-            padding: 12px;
-            display: flex;
-            justify-content: space-between;
-            color: #666;
-            font-size: 13px;
-        }
-
-        .info-value {
-            color: white;
-            font-weight: bold;
-        }
-
-        /* Активные бустеры */
-        .active-boosters {
-            position: absolute;
-            top: 70px;
-            right: 15px;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-
-        .active-booster {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 4px 10px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: white;
-            font-size: 11px;
-        }
-
-        .booster-time {
-            color: #22c55e;
-            font-weight: 600;
-        }
-
-        /* Табы */
-        .tab {
-            display: none;
-        }
-
-        .tab.active {
-            display: block;
-        }
-
-        /* Магазин */
-        .shop-item {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 20px;
-            padding: 12px;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-
-        .shop-item:active {
-            background: #1a1a1a;
-        }
-
-        .shop-item.vip {
-            border: 2px solid gold;
-        }
-
-        .shop-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-
-        .shop-title {
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .shop-price {
-            background: #222;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .shop-desc {
-            color: #666;
-            font-size: 12px;
-            margin-bottom: 3px;
-        }
-
-        .shop-info {
-            color: #666;
-            font-size: 11px;
-        }
-
-        /* Инвентарь */
-        .inventory-title {
-            display: flex;
-            justify-content: space-between;
-            color: #666;
-            font-size: 13px;
-            margin: 15px 0 8px;
-        }
-
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .inventory-item {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 15px;
-            padding: 8px;
-            text-align: center;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .inventory-item:active {
-            background: #1a1a1a;
-        }
-
-        .item-icon {
-            font-size: 28px;
-        }
-
-        .item-name {
-            color: white;
-            font-size: 11px;
-        }
-
-        .item-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: white;
-            color: black;
-            font-size: 9px;
-            font-weight: bold;
-            padding: 2px 5px;
-            border-radius: 20px;
-        }
-
-        /* Игра Мины */
-        .mines-game {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 20px;
-            padding: 15px;
-        }
-
-        .control-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .control-label {
-            color: #666;
-            font-size: 13px;
-        }
-
-        .control-value {
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .mines-selector {
-            display: flex;
-            gap: 8px;
-        }
-
-        .mine-option {
-            flex: 1;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 8px;
-            text-align: center;
-            color: white;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .mine-option.active {
-            border-color: white;
-            background: #222;
-        }
-
-        .bet-input {
-            width: 100%;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 10px;
-            color: white;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        .play-btn {
-            width: 100%;
-            background: white;
-            color: black;
-            border: none;
-            border-radius: 30px;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 15px;
-        }
-
-        .play-btn:active {
-            transform: scale(0.98);
-        }
-
-        .mines-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
+            width: 100%; max-width: 400px; height: 100vh; max-height: 850px;
+            background: black; border: 1px solid #222; border-radius: 30px;
+            display: flex; flex-direction: column; overflow: hidden; position: relative;
+        }
+
+        /* ШАПКА */
+        .header { padding: 15px 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .balance-amount { font-size: 24px; font-weight: bold; color: white; }
+        .vip-badge { background: gold; color: black; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: bold; margin-left: 5px; }
+
+        /* МЕНЮ */
+        .menu { display: flex; padding: 10px; gap: 15px; border-bottom: 1px solid #222; overflow-x: auto; scrollbar-width: none; }
+        .menu::-webkit-scrollbar { display: none; }
+        .menu-item { color: #555; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; padding: 5px 10px; transition: 0.3s; }
+        .menu-item.active { color: white; border-bottom: 2px solid white; }
+        .menu-item.admin-btn { color: #ef4444; }
+
+        /* КОНТЕНТ */
+        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
+        .tab { display: none; }
+        .tab.active { display: block; }
+
+        /* КНОПКА ТАПА */
+        .tap-area { text-align: center; margin-bottom: 30px; }
+        .tap-button {
+            width: 200px; height: 200px; background: #111; border: 4px solid #333;
+            border-radius: 50%; margin: 20px auto; display: flex; align-items: center;
+            justify-content: center; font-size: 60px; cursor: pointer; transition: transform 0.05s;
+        }
+        .tap-button:active { transform: scale(0.92); }
+
+        /* ИГРА МИНЫ */
+        .mines-config { display: flex; gap: 10px; margin-bottom: 15px; }
+        .mines-input { flex: 1; background: #111; border: 1px solid #333; color: white; padding: 10px; border-radius: 12px; }
+        .mine-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 20px; }
         .mine-cell {
-            aspect-ratio: 1;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            cursor: pointer;
+            aspect-ratio: 1; background: #111; border: 1px solid #222; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer;
         }
+        .mine-cell.open-win { background: rgba(34, 197, 94, 0.2); border-color: #22c55e; }
+        .mine-cell.open-loss { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
 
-        .mine-cell:active {
-            transform: scale(0.95);
+        /* ОБЩИЕ КНОПКИ */
+        .btn {
+            width: 100%; padding: 15px; border-radius: 15px; border: none;
+            font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s;
         }
+        .btn-primary { background: white; color: black; }
+        .btn-success { background: #22c55e; color: white; }
+        .btn-admin { background: #1a1a1a; color: #ef4444; border: 1px solid #ef4444; }
 
-        .mine-cell.revealed {
-            background: #222;
-        }
-
-        .mine-cell.mine {
-            background: #ff4444;
-        }
-
-        .mine-cell.safe {
-            background: #22c55e;
-        }
-
-        .game-result {
-            text-align: center;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        /* Профиль */
-        .profile-header {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .profile-avatar {
-            width: 60px;
-            height: 60px;
-            background: #1a1a1a;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            margin: 0 auto 8px;
-        }
-
-        .profile-name {
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .profile-id {
-            color: #666;
-            font-size: 11px;
-            margin: 3px 0 8px;
-        }
-
-        .profile-vip {
-            border: 1px solid gold;
-            color: gold;
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .stats-list {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 20px;
-            padding: 12px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #222;
-            font-size: 13px;
-        }
-
-        .stat-row:last-child {
-            border-bottom: none;
-        }
-
-        /* Админ панель */
-        .admin-panel {
-            background: #111;
-            border: 1px solid #ff4444;
-            border-radius: 20px;
-            padding: 15px;
-        }
-
-        .admin-title {
-            color: #ff4444;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        .admin-input {
-            width: 100%;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 10px;
-            color: white;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-
-        .admin-btn {
-            width: 100%;
-            background: #ff4444;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 10px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 8px;
-        }
-
-        .admin-btn:active {
-            transform: scale(0.98);
-        }
-
-        .admin-btn.secondary {
-            background: #333;
-        }
-
-        /* Рулетка */
-        .roulette-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .roulette-box {
-            width: 280px;
-            background: #111;
-            border: 2px solid #333;
-            border-radius: 30px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .roulette-title {
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .roulette-items {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .roulette-slot {
-            background: black;
-            border: 1px solid #333;
-            border-radius: 15px;
-            padding: 15px 0;
-            font-size: 30px;
-        }
-
-        .spinning {
-            animation: spin 0.1s infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: translateY(-3px); }
-            50% { transform: translateY(3px); }
-            100% { transform: translateY(-3px); }
-        }
-
-        .win-slot {
-            border-color: gold;
-        }
-
-        .close-btn {
-            width: 100%;
-            background: white;
-            color: black;
-            border: none;
-            border-radius: 30px;
-            padding: 12px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Уведомление */
+        /* УВЕДОМЛЕНИЯ */
         .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: black;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            border: 2px solid;
-            font-size: 13px;
-            font-weight: bold;
-            z-index: 10000;
-            animation: fade 1.5s forwards;
-        }
-
-        @keyframes fade {
-            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            20% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            80% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-        }
-
-        /* Парящий текст */
-        .float {
-            position: fixed;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            pointer-events: none;
-            z-index: 9999;
-            animation: floatUp 1s forwards;
-        }
-
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-80px); }
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #22c55e; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <div class="app">
-        <!-- Шапка -->
-        <div class="header">
-            <div class="balance">
-                <div class="balance-icon">₿</div>
-                <div class="balance-info">
-                    <div class="balance-label">Баланс</div>
-                    <div class="balance-row">
-                        <span class="balance-amount" id="tonAmount">1000</span>
-                        <span class="vip-badge" id="vipBadge" style="display: none;">VIP</span>
-                        <span class="admin-badge" id="adminBadge" style="display: none;">ADMIN</span>
-                    </div>
-                </div>
-            </div>
-            <div class="online" id="onlineBtn">
-                <div class="online-dot"></div>
-                <span class="online-text">ONLINE</span>
-            </div>
+
+<div class="app">
+    <div class="header">
+        <div>
+            <span class="balance-amount" id="tonBal">1000</span> <span style="color: #888;">TON</span>
+            <span id="vipBadge" class="vip-badge" style="display:none">VIP</span>
         </div>
-
-        <!-- Активные бустеры -->
-        <div class="active-boosters" id="activeBoosters"></div>
-
-        <!-- Контент -->
-        <div class="content">
-            <!-- Главная -->
-            <div id="homeTab" class="tab active">
-                <div class="diamond-section">
-                    <div class="diamond-btn" id="tapBtn">
-                        <div class="diamond-icon">💎</div>
-                        <div class="diamond-text">TAP</div>
-                    </div>
-                    <div>
-                        <span class="energy-info">⚡ Энергия</span>
-                        <span class="energy-value" id="energyDisplay">2500/2500</span>
-                    </div>
-                </div>
-
-                <div class="cards-grid">
-                    <div class="card">
-                        <div class="card-header">⚡ Energy</div>
-                        <div class="card-number" id="energyNumber">2500</div>
-                        <div class="card-max">/ 2500</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="energyProgress" style="width: 100%"></div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">🚀 Multiplier</div>
-                        <div class="card-number" id="multiplierDisplay">1.0x</div>
-                        <div class="card-max" id="multiplierProgress">0/1000</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="multiplierBar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <span>💰 Заработано:</span>
-                    <span class="info-value" id="totalEarned">0 TON</span>
-                </div>
-            </div>
-
-            <!-- Магазин -->
-            <div id="shopTab" class="tab">
-                <div class="card" style="margin-bottom: 10px;">
-                    <div class="info-row" style="padding: 8px;">
-                        <span>💰 Баланс</span>
-                        <span class="info-value" id="shopBalance">1000 TON</span>
-                    </div>
-                </div>
-
-                <div class="shop-item vip" id="vipItem">
-                    <div class="shop-header">
-                        <span class="shop-title">👑 VIP ELITE</span>
-                        <span class="shop-price">10k</span>
-                    </div>
-                    <div class="shop-desc">+10 TON за тап</div>
-                    <div class="shop-info">30 дней</div>
-                </div>
-
-                <div class="shop-item" id="caseItem">
-                    <div class="shop-header">
-                        <span class="shop-title">🎲 Бустер пак</span>
-                        <span class="shop-price">1k</span>
-                    </div>
-                    <div class="shop-desc">⚡💎🚀 10% каждый</div>
-                    <div class="shop-info">15 минут</div>
-                </div>
-
-                <div class="inventory-title">
-                    <span>📦 Инвентарь</span>
-                    <span style="cursor: pointer;" id="useAllBtn">Использовать все</span>
-                </div>
-                <div class="inventory-grid">
-                    <div class="inventory-item" id="useTurbo">
-                        <div class="item-icon">⚡</div>
-                        <div class="item-name">Turbo</div>
-                        <span class="item-count" id="turboCount">0</span>
-                    </div>
-                    <div class="inventory-item" id="useCrystal">
-                        <div class="item-icon">💎</div>
-                        <div class="item-name">Crystal</div>
-                        <span class="item-count" id="crystalCount">0</span>
-                    </div>
-                    <div class="inventory-item" id="useBoost">
-                        <div class="item-icon">🚀</div>
-                        <div class="item-name">Boost</div>
-                        <span class="item-count" id="boostCount">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Игра -->
-            <div id="gameTab" class="tab">
-                <div class="mines-game">
-                    <div class="control-row">
-                        <span class="control-label">Баланс:</span>
-                        <span class="control-value" id="gameBalance">1000</span>
-                    </div>
-                    
-                    <div class="control-row">
-                        <span class="control-label">Мины:</span>
-                        <div class="mines-selector" id="minesSelector">
-                            <div class="mine-option active" data-mines="3">3</div>
-                            <div class="mine-option" data-mines="5">5</div>
-                            <div class="mine-option" data-mines="10">10</div>
-                        </div>
-                    </div>
-
-                    <input type="number" class="bet-input" id="betAmount" value="100" min="10" placeholder="Ставка">
-                    
-                    <button class="play-btn" id="startGameBtn">Начать игру</button>
-
-                    <div class="mines-grid" id="minesGrid"></div>
-                    <div class="game-result" id="gameResult"></div>
-                </div>
-            </div>
-
-            <!-- Профиль -->
-            <div id="profileTab" class="tab">
-                <div class="profile-header">
-                    <div class="profile-avatar">👤</div>
-                    <div class="profile-name">Игрок</div>
-                    <div class="profile-id" id="userId">ID: ...</div>
-                    <div class="profile-vip" id="profileVip" style="display: none;">VIP</div>
-                </div>
-
-                <div class="stats-list">
-                    <div class="stat-row"><span>Тапов</span><span id="profileTaps">0</span></div>
-                    <div class="stat-row"><span>Заработано</span><span id="profileEarned">0</span></div>
-                    <div class="stat-row"><span>Множитель</span><span id="profileMultiplier">1.0x</span></div>
-                    <div class="stat-row"><span>Кейсов</span><span id="profileCases">0</span></div>
-                    <div class="stat-row"><span>Выигрыши</span><span id="minesWins">0</span></div>
-                </div>
-            </div>
-
-            <!-- Админка -->
-            <div id="adminTab" class="tab">
-                <div class="admin-panel">
-                    <div class="admin-title">ADMIN</div>
-                    <input type="number" class="admin-input" id="adminUserId" placeholder="ID">
-                    <input type="number" class="admin-input" id="adminAmount" placeholder="Сумма">
-                    <button class="admin-btn" id="giveTonBtn">Выдать TON</button>
-                    <button class="admin-btn" id="giveVipBtn">Выдать VIP</button>
-                    <button class="admin-btn secondary" id="setEnergyBtn">Лимит энергии</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Нижнее меню -->
-        <div class="bottom-menu">
-            <div class="menu-item active" data-tab="home">
-                <svg class="menu-icon" viewBox="0 0 24 24"><path d="M12 3L4 9v12h16V9l-8-6z"/></svg>
-                <span class="menu-text">Home</span>
-            </div>
-            <div class="menu-item" data-tab="shop">
-                <svg class="menu-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                <span class="menu-text">Shop</span>
-            </div>
-            <div class="menu-item" data-tab="game">
-                <svg class="menu-icon" viewBox="0 0 24 24"><path d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/></svg>
-                <span class="menu-text">Game</span>
-            </div>
-            <div class="menu-item" data-tab="profile">
-                <svg class="menu-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                <span class="menu-text">Profile</span>
-            </div>
-        </div>
-
-        <!-- Рулетка -->
-        <div class="roulette-overlay" id="roulette">
-            <div class="roulette-box">
-                <div class="roulette-title">Открытие кейса</div>
-                <div class="roulette-items">
-                    <div class="roulette-slot" id="slot1">⚡</div>
-                    <div class="roulette-slot" id="slot2">💎</div>
-                    <div class="roulette-slot" id="slot3">🚀</div>
-                </div>
-                <button class="close-btn" id="closeRoulette">Закрыть</button>
-            </div>
-        </div>
+        <div style="font-size: 12px; color: #666;">ID: <span id="userId">8388334620</span></div>
     </div>
 
-    <script>
-        // Telegram
-        let tg = window.Telegram?.WebApp
-        if (tg) {
-            tg.ready()
-            tg.expand()
-            tg.disableVerticalSwipes?.()
-        }
+    <div class="menu" id="mainMenu">
+        <div class="menu-item active" onclick="showTab('home', this)">Главная</div>
+        <div class="menu-item" onclick="showTab('mines', this)">Мины</div>
+        <div class="menu-item" onclick="showTab('shop', this)">Магазин</div>
+        </div>
 
-        // ID пользователя
-        let userId = tg?.initDataUnsafe?.user?.id || 0
-        const ADMIN_ID = 8388334620
-        let isAdmin = userId === ADMIN_ID
+    <div class="content">
+        <div id="home" class="tab active">
+            <div class="tap-area">
+                <div class="tap-button" id="tapBtn">💎</div>
+                <p>Энергия: <span id="energy">2500</span>/2500</p>
+            </div>
+        </div>
 
-        document.getElementById('adminBadge').style.display = isAdmin ? 'inline-block' : 'none'
-        document.getElementById('userId').textContent = 'ID: ' + userId
+        <div id="mines" class="tab">
+            <div class="mines-config">
+                <input type="number" id="betInput" class="mines-input" placeholder="Ставка">
+                <select id="minesCount" class="mines-input">
+                    <option value="3">3 Мины</option>
+                    <option value="5">5 Мин</option>
+                    <option value="10">10 Мин</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="startMines">Начать игру</button>
+            <button class="btn btn-success" id="cashoutBtn" style="display:none">Забрать: 0 TON</button>
+            <div class="mine-grid" id="mineGrid"></div>
+        </div>
 
-        // Данные
-        let tons = 1000
-        let totalEarned = 0
-        let energy = 2500
-        let maxEnergy = 2500
-        let totalTaps = 0
-        let casesOpened = 0
-        let minesWins = 0
-        let vipActive = false
-        let vipExpiry = null
+        <div id="shop" class="tab">
+            <div style="background:#111; padding:15px; border-radius:15px;">
+                <h3>👑 VIP ELITE</h3>
+                <p style="color:#888; font-size:12px;">+10 TON за тап</p>
+                <button class="btn btn-primary" onclick="buyVip()">Купить за 10,000 TON</button>
+            </div>
+        </div>
+
+        <div id="admin" class="tab">
+            <h2 style="color:#ef4444; margin-bottom:20px;">Панель Администратора</h2>
+            <button class="btn btn-admin" onclick="adminAddTons()">+1,000,000 TON</button>
+            <button class="btn btn-admin" onclick="adminGiveVip()">Выдать VIP навсегда</button>
+            <button class="btn btn-admin" onclick="adminRefill()">Снять лимит энергии</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- ДАННЫЕ ---
+    let tons = parseInt(localStorage.getItem('tons')) || 1000;
+    let energy = 2500;
+    let maxEnergy = 2500;
+    let isVip = localStorage.getItem('isVip') === 'true';
+    const ADMIN_ID = "8388334620"; // Твой ID
+
+    // --- ИНИЦИАЛИЗАЦИЯ ---
+    window.onload = () => {
+        updateUI();
+        checkAdmin();
+        createMineGrid();
         
-        let inv = { turbo: 0, crystal: 0, boost: 0 }
-        let active = { turbo: false, turboEnd: 0, crystal: false, crystalEnd: 0, boost: false, boostEnd: 0 }
-
-        // Игра
-        let gameActive = false
-        let minesCount = 3
-        let board = []
-        let revealed = []
-        let gameBet = 0
-
-        // Элементы
-        const tonAmount = document.getElementById('tonAmount')
-        const vipBadge = document.getElementById('vipBadge')
-        const energyDisplay = document.getElementById('energyDisplay')
-        const energyNumber = document.getElementById('energyNumber')
-        const energyProgress = document.getElementById('energyProgress')
-        const multiplierDisplay = document.getElementById('multiplierDisplay')
-        const multiplierProgress = document.getElementById('multiplierProgress')
-        const multiplierBar = document.getElementById('multiplierBar')
-        const totalEarnedEl = document.getElementById('totalEarned')
-        const shopBalance = document.getElementById('shopBalance')
-        const gameBalance = document.getElementById('gameBalance')
-        
-        const profileTaps = document.getElementById('profileTaps')
-        const profileEarned = document.getElementById('profileEarned')
-        const profileMultiplier = document.getElementById('profileMultiplier')
-        const profileCases = document.getElementById('profileCases')
-        const profileVip = document.getElementById('profileVip')
-        const minesWinsEl = document.getElementById('minesWins')
-        
-        const turboCount = document.getElementById('turboCount')
-        const crystalCount = document.getElementById('crystalCount')
-        const boostCount = document.getElementById('boostCount')
-        
-        const activeBoosters = document.getElementById('activeBoosters')
-        const roulette = document.getElementById('roulette')
-        const slot1 = document.getElementById('slot1')
-        const slot2 = document.getElementById('slot2')
-        const slot3 = document.getElementById('slot3')
-        const closeRoulette = document.getElementById('closeRoulette')
-        
-        const tapBtn = document.getElementById('tapBtn')
-        const onlineBtn = document.getElementById('onlineBtn')
-        const vipItem = document.getElementById('vipItem')
-        const caseItem = document.getElementById('caseItem')
-        const useAllBtn = document.getElementById('useAllBtn')
-        const useTurbo = document.getElementById('useTurbo')
-        const useCrystal = document.getElementById('useCrystal')
-        const useBoost = document.getElementById('useBoost')
-        
-        const startGameBtn = document.getElementById('startGameBtn')
-        const betAmount = document.getElementById('betAmount')
-        const minesGrid = document.getElementById('minesGrid')
-        const gameResult = document.getElementById('gameResult')
-
-        // Переключение табов
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault()
-                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'))
-                this.classList.add('active')
-                
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-                let tabName = this.dataset.tab
-                document.getElementById(tabName + 'Tab').classList.add('active')
-                
-                if (tabName === 'admin' && !isAdmin) {
-                    document.getElementById('homeTab').classList.add('active')
-                    document.querySelector('.menu-item[data-tab="home"]').classList.add('active')
-                }
-            })
-        })
-
-        // Функции
-        function toast(msg, err = false) {
-            let t = document.createElement('div')
-            t.className = 'toast'
-            t.textContent = msg
-            t.style.borderColor = err ? '#ff4444' : '#22c55e'
-            document.body.appendChild(t)
-            setTimeout(() => t.remove(), 1500)
-        }
-
-        function float(text, x, y) {
-            let el = document.createElement('div')
-            el.className = 'float'
-            el.textContent = text
-            el.style.left = x + 'px'
-            el.style.top = (y - 30) + 'px'
-            document.body.appendChild(el)
-            setTimeout(() => el.remove(), 1000)
-        }
-
-        function update() {
-            tonAmount.textContent = tons
-            shopBalance.textContent = tons
-            gameBalance.textContent = tons
-            
-            if (vipActive && vipExpiry && Date.now() > vipExpiry) {
-                vipActive = false
-                vipExpiry = null
+        // Регенерация энергии
+        setInterval(() => {
+            if (energy < maxEnergy) {
+                energy = Math.min(maxEnergy, energy + 2);
+                document.getElementById('energy').innerText = energy;
             }
-            vipBadge.style.display = vipActive ? 'inline-block' : 'none'
-            profileVip.style.display = vipActive ? 'inline-block' : 'none'
-            
-            energyDisplay.textContent = Math.floor(energy) + '/' + maxEnergy
-            energyNumber.textContent = Math.floor(energy)
-            energyProgress.style.width = (energy / maxEnergy) * 100 +
+        }, 1000);
+    };
+
+    function updateUI() {
+        document.getElementById('tonBal').innerText = tons;
+        document.getElementById('energy').innerText = energy;
+        document.getElementById('vipBadge').style.display = isVip ? 'inline' : 'none';
+        localStorage.setItem('tons', tons);
+        localStorage.setItem('isVip', isVip);
+    }
+
+    function checkAdmin() {
+        const uId = document.getElementById('userId').innerText;
+        if (uId === ADMIN_ID) {
+            const btn = document.createElement('div');
+            btn.className = 'menu-item admin-btn';
+            btn.innerText = 'ADMIN';
+            btn.onclick = (e) => showTab('admin', btn);
+            document.getElementById('mainMenu').appendChild(btn);
+        }
+    }
+
+    function showTab(tabId, el) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        el.classList.add('active');
+    }
+
+    function toast(text) {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.innerText = text;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2000);
+    }
+
+    // --- ТАП МЕХАНИКА ---
+    document.getElementById('tapBtn').onclick = (e) => {
+        if (energy <= 0) return toast("Нет энергии!");
+        energy--;
+        let gain = isVip ? 11 : 1;
+        tons += gain;
+        updateUI();
+    };
+
+    // --- ИГРА МИНЫ ---
+    let minePositions = [];
+    let gameActive = false;
+    let currentBet = 0;
+    let revealedSafe = 0;
+
+    function createMineGrid() {
+        const grid = document.getElementById('mineGrid');
+        grid.innerHTML = '';
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'mine-cell';
+            cell.onclick = () => clickCell(i, cell);
+            grid.appendChild(cell);
+        }
+    }
+
+    document.getElementById('startMines').onclick = () => {
+        const bet = parseInt(document.getElementById('betInput').value);
+        if (isNaN(bet) || bet > tons || bet <= 0) return toast("Недостаточно TON!");
+        
+        tons -= bet;
+        currentBet = bet;
+        gameActive = true;
+        revealedSafe = 0;
+        minePositions = [];
+        const count = parseInt(document.getElementById('minesCount').value);
+        
+        while(minePositions.length < count) {
+            let r = Math.floor(Math.random() * 25);
+            if(!minePositions.includes(r)) minePositions.push(r);
+        }
+
+        document.getElementById('startMines').style.display = 'none';
+        document.getElementById('cashoutBtn').style.display = 'block';
+        document.getElementById('cashoutBtn').innerText = `Забрать: ${currentBet} TON`;
+        createMineGrid();
+        updateUI();
+    };
+
+    function clickCell(idx, cell) {
+        if (!gameActive || cell.innerText !== '') return;
+
+        if (minePositions.includes(idx)) {
+            cell.innerText = '💣';
+            cell.classList.add('open-loss');
+            toast("БАБАХ! Мина!");
+            gameActive = false;
+            setTimeout(() => {
+                document.getElementById('startMines').style.display = 'block';
+                document.getElementById('cashoutBtn').style.display = 'none';
+                createMineGrid();
+            }, 1500);
+        } else {
+            cell.innerText = '💎';
+            cell.classList.add('open-win');
+            revealedSafe++;
+            let mult = 1 + (revealedSafe * (minePositions.length / 10));
+            document.getElementById('cashoutBtn').innerText = `Забрать: ${Math.floor(currentBet * mult)} TON`;
+        }
+    }
+
+    document.getElementById('cashoutBtn').onclick = () => {
+        let mult = 1 + (revealedSafe * (minePositions.length / 10));
+        let win = Math.floor(currentBet * mult);
+        tons += win;
+        gameActive = false;
+        toast(`Выиграно: ${win} TON`);
+        document.getElementById('startMines').style.display = 'block';
+        document.getElementById('cashoutBtn').style.display = 'none';
+        createMineGrid();
+        updateUI();
+    };
+
+    // --- МАГАЗИН ---
+    function buyVip() {
+        if (tons >= 10000) {
+            tons -= 10000;
+            isVip = true;
+            updateUI();
+            toast("VIP куплен!");
+        } else {
+            toast("Нужно 10,000 TON");
+        }
+    }
+
+    // --- АДМИН ФУНКЦИИ ---
+    function adminAddTons() { tons += 1000000; updateUI(); toast("Миллион выдан!"); }
+    function adminGiveVip() { isVip = true; updateUI(); toast("VIP выдан!"); }
+    function adminRefill() { energy = 999999; maxEnergy = 999999; updateUI(); toast("Энергия бесконечна!"); }
+</script>
+
+</body>
+</html>
