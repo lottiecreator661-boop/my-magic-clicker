@@ -1,0 +1,54 @@
+const express = require('express');
+const { Telegraf } = require('telegraf');
+const app = express();
+const PORT = process.env.PORT || 3000;
+const BOT_TOKEN = '8539172370:AAErv47oW_uZ-i5awhDK-y-FwONxDhvR_nc';
+
+const HTML = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:linear-gradient(135deg,#0a0a0a,#1a1a2e);font-family:Arial;color:white;padding:16px;padding-bottom:80px}.header{background:rgba(0,0,0,0.5);border-radius:20px;padding:16px;margin-bottom:20px;display:flex;justify-content:space-between}.balance{background:rgba(236,72,153,0.2);padding:8px 16px;border-radius:30px;color:#f472b6}.case-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.case-card{background:rgba(30,30,50,0.8);border-radius:20px;padding:20px;text-align:center;cursor:pointer}.case-emoji{font-size:48px}.case-price{color:#4ade80}.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.9);display:flex;justify-content:space-around;padding:12px}.nav-item{text-align:center;cursor:pointer;color:#9ca3af}.nav-item.active{color:#ec4899}.nav-icon{font-size:24px}.page{display:none}.page.active{display:block}.inventory-item{background:rgba(30,30,50,0.5);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between}.modal{position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;border-radius:30px 30px 0 0;padding:24px;transform:translateY(100%);transition:transform 0.3s;z-index:100}.modal.open{transform:translateY(0)}.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:none;z-index:99}.overlay.open{display:block}button{background:#ec4899;width:100%;padding:16px;border:none;border-radius:30px;color:white;font-weight:bold;margin-bottom:16px;cursor:pointer}.top-user{display:flex;justify-content:space-between;padding:12px;background:rgba(30,30,50,0.5);border-radius:12px;margin-bottom:8px}</style>
+</head>
+<body>
+<div class="header"><div><b>NFT CASES</b><br><span style="font-size:10px">Level 1</span></div><div class="balance" id="balance">0.07 TON</div></div>
+<div id="gamesPage" class="page active"><div class="case-grid" id="cases"></div></div>
+<div id="inventoryPage" class="page"><h3>🎒 Инвентарь</h3><div id="inventory"></div></div>
+<div id="profilePage" class="page"><div style="background:rgba(30,30,50,0.5);border-radius:20px;padding:16px;margin-bottom:16px;text-align:center"><div style="font-size:48px">👤</div><div><b>Игрок</b></div></div><div style="background:rgba(30,30,50,0.5);border-radius:20px;padding:16px;margin-bottom:16px"><div style="display:flex;justify-content:space-between"><span>💰 Баланс</span><span id="profileBalance" style="color:#4ade80">0 TON</span></div><div style="display:flex;justify-content:space-between;margin-top:12px"><span>🎁 Ценность</span><span id="inventoryTotal" style="color:#f472b6">0 TON</span></div></div><div style="background:rgba(30,30,50,0.5);border-radius:20px;padding:16px"><div><b>🤝 Реферальная ссылка</b></div><div id="refLink" style="font-size:11px;background:#0a0a0a;padding:8px;border-radius:10px;margin-top:8px"></div></div></div>
+<div id="topPage" class="page"><div style="display:flex;gap:8px;margin-bottom:16px"><button id="btnBal" style="flex:1">💰 Топ баланса</button><button id="btnInv" style="flex:1;background:#374151">🎒 Топ инвентаря</button></div><div id="topList"></div></div>
+<div class="bottom-nav"><div class="nav-item active" data-page="games"><span class="nav-icon">🎮</span><br>Игры</div><div class="nav-item" data-page="inventory"><span class="nav-icon">🎒</span><br>Инвентарь</div><div class="nav-item" data-page="profile"><span class="nav-icon">👤</span><br>Профиль</div><div class="nav-item" data-page="top"><span class="nav-icon">🏆</span><br>Топ</div></div>
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="modal"><h3 id="modalTitle">Кейс</h3><button id="openBtn">🔑 Открыть</button><div id="modalPrizes"></div><button onclick="closeModal()" style="background:#374151">Закрыть</button></div>
+<script>
+const tg=window.Telegram.WebApp;tg.ready();tg.expand();
+let userId=tg.initDataUnsafe?.user?.id||'user_'+Date.now();
+let balance=0.07,inventory=[];
+const cases=[{id:'sweet',name:'🌸 Sweet Spring',price:2},{id:'lover',name:'💕 LOVER',price:1},{id:'gems',name:'💎 MYSTIC GEMS',price:0.8},{id:'bear',name:'🐻 NIGHT BEAR',price:0.5}];
+const prizes={sweet:[{name:'KISSED FROGS',value:52,rarity:'RARE'},{name:'DIAMOND RINGS',value:29,rarity:'RARE'},{name:'IONIC DRYERS',value:15,rarity:'UNIQUE'},{name:'SKY STILETTOS',value:15,rarity:'UNIQUE'},{name:'SAKURA FLOWERS',value:11,rarity:'UNIQUE'},{name:'LOVE CANDLES',value:9.74,rarity:'UNIQUE'},{name:'BERRY BOXES',value:4.88,rarity:'UNIQUE'},{name:'LUSH BOUQUETS',value:4.69,rarity:'UNIQUE'},{name:'SPRING BASKETS',value:4.63,rarity:'UNIQUE'},{name:'CLOVER PINS',value:3.42,rarity:'UNIQUE'}]};
+prizes.lover=prizes.sweet.slice(0,5);prizes.gems=prizes.sweet.slice(2,7);prizes.bear=prizes.sweet.slice(4,8);
+function save(){localStorage.setItem(userId+'_b',balance);localStorage.setItem(userId+'_i',JSON.stringify(inventory));}
+function load(){let b=localStorage.getItem(userId+'_b'),i=localStorage.getItem(userId+'_i');if(b)balance=parseFloat(b);if(i)inventory=JSON.parse(i);update();}
+function update(){document.getElementById('balance').innerHTML=balance.toFixed(2)+' TON';document.getElementById('profileBalance').innerHTML=balance.toFixed(2)+' TON';let total=inventory.reduce((s,i)=>s+(i.value*i.quantity),0);document.getElementById('inventoryTotal').innerHTML=total.toFixed(2)+' TON';document.getElementById('refLink').innerHTML='t.me/bot?start='+userId;renderInv();}
+function renderCases(){document.getElementById('cases').innerHTML=cases.map(c=>'<div class="case-card" onclick="openCase(\''+c.id+'\',\''+c.name+'\','+c.price+')"><div class="case-emoji">'+c.emoji+'</div><div class="case-name">'+c.name+'</div><div class="case-price">'+c.price+' TON</div></div>').join('');}
+window.openCase=function(id,name,price){let p=prizes[id]||prizes.sweet;document.getElementById('modalTitle').innerHTML=name;document.getElementById('openBtn').innerHTML='🔑 Открыть за '+price+' TON';document.getElementById('modalPrizes').innerHTML=p.map(x=>'<div style="display:flex;justify-content:space-between;padding:8px 0"><span><span style="background:rgba(168,85,247,0.3);padding:2px 8px;border-radius:20px;font-size:10px">'+x.rarity+'</span> '+x.name+'</span><span style="color:#4ade80">'+x.value+' TON</span></div>').join('');document.getElementById('overlay').classList.add('open');document.getElementById('modal').classList.add('open');document.getElementById('openBtn').onclick=()=>{if(balance<price){tg.showAlert('Не хватает TON');return}let won=p[Math.floor(Math.random()*p.length)];balance-=price;let ex=inventory.find(i=>i.name===won.name);if(ex)ex.quantity++;else inventory.push({name:won.name,value:won.value,quantity:1,rarity:won.rarity});save();update();tg.showAlert('🎉 Вы выиграли: '+won.name+' ('+won.value+' TON)');closeModal();};};
+window.closeModal=function(){document.getElementById('overlay').classList.remove('open');document.getElementById('modal').classList.remove('open');};
+function renderInv(){let c=document.getElementById('inventory');if(inventory.length===0){c.innerHTML='<div style="text-align:center;color:#6b7280;padding:40px">🎁 Нет NFT</div>';return}c.innerHTML=inventory.map(i=>'<div class="inventory-item"><div><b>'+i.name+'</b><br><span style="font-size:10px">'+i.rarity+'</span></div><div style="text-align:right">'+i.value+' TON<br>x'+i.quantity+'</div></div>').join('');}
+function renderTop(t){let d=[{name:'КИТ',val:3250},{name:'МАГНАТ',val:1890},{name:'БОГАТЕЙ',val:1250}];document.getElementById('topList').innerHTML=d.map((u,i)=>'<div class="top-user"><span>'+(i+1)+'. '+u.name+'</span><span style="color:#4ade80">'+u.val+' TON</span></div>').join('');}
+document.querySelectorAll('.nav-item').forEach(i=>{i.onclick=()=>{let p=i.dataset.page;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p+'Page').classList.add('active');document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));i.classList.add('active');if(p==='top')renderTop();};});
+document.getElementById('btnBal').onclick=()=>renderTop();document.getElementById('btnInv').onclick=()=>renderTop();
+load();renderCases();
+</script>
+</body>
+</html>`;
+
+app.get('/', (req, res) => res.send(HTML));
+app.listen(PORT, '0.0.0.0', () => console.log(`✅ Server on port ${PORT}`));
+
+const bot = new Telegraf(BOT_TOKEN);
+bot.start((ctx) => {
+    const url = `https://${process.env.REPL_SLUG || 'localhost'}.${process.env.REPL_OWNER || 'repl'}.repl.co`;
+    ctx.reply('🎮 Открывай кейсы!', {
+        reply_markup: { inline_keyboard: [[{ text: '🚀 ИГРАТЬ', web_app: { url } }]] }
+    });
+});
+bot.launch();
+console.log('✅ Бот запущен');
